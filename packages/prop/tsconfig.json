@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "allowJs": false,
+        "noImplicitAny": true,
+        "noImplicitReturns": false,
+        "noImplicitThis": true,
+        "noImplicitOverride": true,
+        "strictNullChecks": true,
+        "alwaysStrict": true,
+        "declaration": true,
+        "useDefineForClassFields": false,
+        "experimentalDecorators": true,
+        "resolveJsonModule": false,
+        "preserveConstEnums": true,
+        "moduleResolution": "node",
+        "target": "es6",
+        "lib": [
+            "WebWorker",
+            "DOM",
+            "ES2020"
+        ]
+    }
+}

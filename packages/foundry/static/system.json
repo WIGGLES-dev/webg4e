@@ -1,0 +1,13 @@
+{
+  "name": "gurps4e",
+  "title": "GURPS 4th edition",
+  "description": "",
+  "version": "0.1.0",
+  "templateVersion": 1,
+  "author": "Ian Bell",
+  "scripts": ["foundry.js"],
+  "styles": ["styles.css"],
+  "gridUnits": "yd",
+  "download": "https://www.github.com/WIGGLES-dev/Sheet/releases/latest/download/gurps4e.zip",
+  "manifest": "https://www.github.com/WIGGLES-dev/Sheet/releases/latest/download/system.json"
+}

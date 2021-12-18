@@ -1,0 +1,10 @@
+.valor .window-content {
+  padding: 0px !important;
+  background: none !important;
+  background-color: white !important;
+  overflow-x: auto;
+}
+.window-content form.gurps {
+  height: 100%;
+  width: 100%;
+}

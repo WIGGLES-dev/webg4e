@@ -1,0 +1,15 @@
+{
+  "name": "prop",
+  "version": "1.0.0",
+  "description": "Library for working with objects using strings.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "library",
+    "paths"
+  ],
+  "author": "Ian Bell",
+  "license": "ISC"
+}

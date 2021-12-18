@@ -1,0 +1,10 @@
+{
+    "name": "gurps-workspace",
+    "workspaces": [
+        "packages/sheet",
+        "packages/gurpsjs",
+        "packages/foundry",
+        "packages/dom-utils",
+        "packages/prop"
+    ]
+}
