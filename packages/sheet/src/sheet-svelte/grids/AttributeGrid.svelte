@@ -28,12 +28,19 @@
   {#each pairs as { attribute, def }, i (attribute.id)}
     {#if def && attribute}
       <div>[{attribute.getPointCost(character)}]</div>
-      <ContentEditableControl
-        type="number"
-        value={(attributeLevel = attribute.getCurrentValue(character))}
-        on:input={({ detail }) => attribute.setCurrentValue(character, +detail)}
-      />
-      <div data-roll="3d6ms" data-roll-target={attributeLevel}>
+      <div class="pb-0.5 border-black border-solid border-b-2">
+        <ContentEditableControl
+          type="number"
+          value="{(attributeLevel = attribute.getCurrentValue(character))}"
+          on:input="{({ detail }) =>
+            attribute.setCurrentValue(character, +detail)}"
+        />
+      </div>
+      <div
+        data-roll="3d6ms"
+        class="hover:text-green-500"
+        data-roll-target="{attributeLevel}"
+      >
         {def.combinedName}
       </div>
     {/if}

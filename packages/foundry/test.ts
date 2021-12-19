@@ -10,4 +10,3 @@ const chromePath = path.normalize(process.env.CHROME_EXE);
 const openChromeTo = (url: string) => {
   exec(`${chromePath} --app=localhost:30000`);
 };
-

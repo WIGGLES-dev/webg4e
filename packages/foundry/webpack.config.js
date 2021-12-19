@@ -1,3 +1,4 @@
+require("dotenv").config();
 const path = require("path");
 const webpack = require("webpack");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
@@ -31,10 +32,9 @@ const config = (env) => {
     resolve: {
       plugins: [new TsconfigPathsPlugin({ configFile: "./tsconfig.json" })],
       extensions: [".ts", ".tsx", ".js", ".svelte", ".wasm", ".css"],
-      // alias: {
-      //   svelte: path.resolve("node_modules", "svelte"),
-      //   interface: path.resolve("src", "interface"),
-      // },
+      alias: {
+        svelte: path.resolve("../../node_modules", "svelte"),
+      },
       mainFields: ["svelte", "browser", "module", "main"],
     },
     module: {
@@ -90,8 +90,10 @@ const config = (env) => {
             copy: [
               {
                 source: "./dist",
-                destination:
-                  "C:/Users/Ian/AppData/Local/FoundryVTT/Data/systems/gurps4e",
+                destination: path.join(
+                  process.env.FOUNDRY_USER,
+                  "/Data/systems/gurps4e"
+                ),
               },
             ],
             archive: [

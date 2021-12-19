@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "gurps4e foundry source",
   "scripts": {
-    "build": "webpack --env mode=development",
+    "dev": "webpack --env mode=development",
+    "build": "webpack --env mode=production",
     "test": "ts-node ./test.ts"
   },
   "keywords": [

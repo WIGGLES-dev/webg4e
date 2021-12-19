@@ -5,12 +5,12 @@
   export let value: string | number;
   let element: HTMLDivElement | undefined;
   let classList = "";
-  let focused = false;
   export { classList as class };
-  const dispatch =
-    createEventDispatcher<{
-      input: string | number;
-    }>();
+  let focused = false;
+
+  const dispatch = createEventDispatcher<{
+    input: string | number;
+  }>();
   const onKeydown = (e: KeyboardEvent) => {
     if (multiline) {
       if (e.key === "Enter") {
@@ -56,16 +56,17 @@
 </script>
 
 <div
-  on:keydown={onKeydown}
-  bind:this={element}
+  on:keydown="{onKeydown}"
+  bind:this="{element}"
   contenteditable="true"
-  on:beforeinput={onBeforeInput}
-  on:input={handleInput}
+  on:beforeinput="{onBeforeInput}"
+  on:input="{handleInput}"
+  class="{classList}"
 >
   {value}
 </div>
 
-<style lang="postcss" class={classList}>
+<style lang="postcss" class="{classList}">
   /* div {
     @apply text-blue-500 border-b;
   } */

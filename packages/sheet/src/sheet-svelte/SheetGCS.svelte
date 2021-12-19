@@ -55,7 +55,7 @@
 
 <form
   class="sheet flex flex-col gap-1 mb-10"
-  on:change={handleChange}
+  on:change="{handleChange}"
   on:submit|preventDefault
 >
   <div class="flex gap-1">
@@ -63,8 +63,8 @@
       <span slot="title">Portrait</span>
       <Portrait
         height="200px"
-        on:change={({ detail: src }) => ($character.profile.portrait = src)}
-        src={$character.getWebProfileSrc()}
+        on:change="{({ detail: src }) => ($character.profile.portrait = src)}"
+        src="{$character.getWebProfileSrc()}"
       />
     </Section>
     <div class="flex flex-col gap-1 flex-1">
@@ -73,7 +73,7 @@
           <Section>
             <span slot="title">Identity</span>
             <div class="form-grid">
-              <Identity character={$character} />
+              <Identity character="{$character}" />
             </div>
           </Section>
         </div>
@@ -81,9 +81,9 @@
           <span slot="title">Miscellaneous</span>
           <div class="form-grid">
             <Miscellaneous
-              createdOn={$character.createdOn}
-              modifiedOn={$character.modifiedOn}
-              playerName={$character.profile.playerName}
+              createdOn="{$character.createdOn}"
+              modifiedOn="{$character.modifiedOn}"
+              playerName="{$character.profile.playerName}"
             />
           </div>
         </Section>
@@ -93,7 +93,7 @@
           <Section>
             <span slot="title">Description</span>
             <div class="description flex">
-              <Description character={$character} />
+              <Description character="{$character}" />
             </div>
           </Section>
         </div>
@@ -101,56 +101,63 @@
     </div>
     <Section>
       <span slot="title">{$character.totalPoints} Points</span>
-      <PointSummary character={$character} />
+      <PointSummary character="{$character}" />
     </Section>
   </div>
   <div class="flex gap-1">
     <div class="flex justify-between flex-col">
       <div class="flex gap-1 mb-1">
-        <AttributeGrid character={$character} attributes={primaryAttributes} />
         <AttributeGrid
-          character={$character}
-          attributes={secondaryAttributes}
+          character="{$character}"
+          attributes="{primaryAttributes}"
+        />
+        <AttributeGrid
+          character="{$character}"
+          attributes="{secondaryAttributes}"
         />
       </div>
       <div class="grid gap-2 grid-cols-2 my-3">
-        <div data-roll class="text-right font-bold">
-          {$character.getThrust().toString()}
+        <div class="contents hover:text-green-500">
+          <div data-roll class="text-right font-bold">
+            {$character.getThrust().toString()}
+          </div>
+          <div>Thrust Damage</div>
         </div>
-        <div>Thrust Damage</div>
-        <div data-roll class="text-right font-bold">
-          {$character.getSwing().toString()}
+        <div class="contents hover:text-green-500">
+          <div data-roll class="text-right font-bold">
+            {$character.getSwing().toString()}
+          </div>
+          <div>Swing Damage</div>
         </div>
-        <div>Swing Damage</div>
       </div>
-      <PoolGrid {character} attributes={poolAttributes} />
+      <PoolGrid character="{character}" attributes="{poolAttributes}" />
     </div>
     <div class="flex-1">
-      <HitLocationTable {settings} />
+      <HitLocationTable settings="{settings}" />
     </div>
     <div class="flex flex-col gap-1 children:last:flex-1">
-      <EncumbranceTable {bl} {move} {dodge} {el} />
-      <LiftingGrid {bl} />
+      <EncumbranceTable bl="{bl}" move="{move}" dodge="{dodge}" el="{el}" />
+      <LiftingGrid bl="{bl}" />
     </div>
   </div>
   {#each $character.settings.blockLayout as block}
     {#if block === "advantages skills"}
       <div class="flex gap-1 children:flex-1">
-        <AdvantageTable {character} on:delete on:edit on:sort />
-        <SkillTable {character} on:delete on:edit on:sort />
+        <AdvantageTable character="{character}" on:delete on:edit on:sort />
+        <SkillTable character="{character}" on:delete on:edit on:sort />
       </div>
     {:else if block === "equipment"}
-      <EquipmentTable character={$character} on:delete on:edit on:sort />
+      <EquipmentTable character="{$character}" on:delete on:edit on:sort />
     {:else if block === "melee"}
-      <MeleeWeaponTable {character} />
+      <MeleeWeaponTable character="{character}" />
     {:else if block === "notes"}
       <!--  -->
     {:else if block === "ranged"}
-      <RangedWeaponTable {character} />
+      <RangedWeaponTable character="{character}" />
     {:else if block === "reaction conditional_modifiers"}
       <!--  -->
     {:else if block === "spells"}
-      <SpellTable {character} on:delete on:edit on:sort />
+      <SpellTable character="{character}" on:delete on:edit on:sort />
     {/if}
   {/each}
 </form>
