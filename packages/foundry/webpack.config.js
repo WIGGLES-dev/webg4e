@@ -22,7 +22,7 @@ const config = (env) => {
     : undefined;
   return {
     mode,
-    watch: true,
+    watch: mode === "development",
     entry: { foundry: "./src/index.ts" },
     devServer,
     output: {
@@ -96,9 +96,7 @@ const config = (env) => {
                 ),
               },
             ],
-            archive: [
-              //{ source: "./dist", destination: "gurps4e.zip" }
-            ],
+            archive: [{ source: "./dist", destination: "./dist/gurps4e.zip" }],
           },
         },
       }),
@@ -107,7 +105,6 @@ const config = (env) => {
       }),
       // new BundleAnalyzerPlugin(),
     ],
-    mode: "development",
   };
 };
 module.exports = config;
