@@ -51,6 +51,8 @@
   $: primaryAttributes = $character.primaryAttributes;
   $: secondaryAttributes = $character.secondaryAttributes;
   $: poolAttributes = $character.pools;
+  $: thrustDamge = $character.getThrust();
+  $: swingDamage = $character.getSwing();
 </script>
 
 <form
@@ -116,18 +118,24 @@
           attributes="{secondaryAttributes}"
         />
       </div>
-      <div class="grid gap-2 grid-cols-2 my-3">
-        <div class="contents hover:text-green-500">
-          <div data-roll class="text-right font-bold">
-            {$character.getThrust().toString()}
+      <div class="grid gap-2 grid-cols-3 my-3">
+        <div
+          data-roll="{thrustDamge.toString()}"
+          class="contents hover:text-green-500"
+        >
+          <div class="text-right font-bold">
+            {thrustDamge.toString()}
           </div>
-          <div>Thrust Damage</div>
+          <div class="col-span-2">Thrust Damage</div>
         </div>
-        <div class="contents hover:text-green-500">
+        <div
+          data-roll="{swingDamage.toString()}"
+          class="contents hover:text-green-500"
+        >
           <div data-roll class="text-right font-bold">
-            {$character.getSwing().toString()}
+            {swingDamage.toString()}
           </div>
-          <div>Swing Damage</div>
+          <div class="col-span-2">Swing Damage</div>
         </div>
       </div>
       <PoolGrid character="{character}" attributes="{poolAttributes}" />

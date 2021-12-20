@@ -31,7 +31,8 @@
   <TabPanel>
     <BaseForm>
       <label>
-        <!--  -->
+        <span>Enable Development Mode</span>
+        <input type="checkbox" />
       </label>
     </BaseForm>
   </TabPanel>
@@ -41,8 +42,8 @@
       height="600px"
       lang="json"
       theme="chrome"
-      value={JSON.stringify(attributes, undefined, 4)}
-      on:save={saveAttributes}
+      value="{JSON.stringify(attributes, undefined, 4)}"
+      on:save="{saveAttributes}"
     />
   </TabPanel>
   <TabPanel>
@@ -51,8 +52,8 @@
       height="600px"
       lang="json"
       theme="chrome"
-      value={JSON.stringify(locations, undefined, 4)}
-      on:save={saveHitlocations}
+      value="{JSON.stringify(locations, undefined, 4)}"
+      on:save="{saveHitlocations}"
     />
   </TabPanel>
 </Tabs>

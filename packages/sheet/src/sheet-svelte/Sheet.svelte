@@ -64,14 +64,21 @@
     dispatch("roll", e.detail);
   }
   function detectRoll(e: MouseEvent) {
-    const target = e.composedPath()[0] as HTMLElement;
+    const target = e
+      .composedPath()
+      .filter((t): t is HTMLElement => t instanceof HTMLElement)
+      .find((t: HTMLElement) => t.dataset.roll != null);
     if (target == null) return;
     let roll = target.dataset.roll;
     if (roll === undefined) return;
-    let rollTarget =
-      "rollTarget" in target.dataset
-        ? target.dataset.rollTarget
-        : target.textContent;
+    let rollTarget: string | undefined | null;
+    if ("rollTarget" in target.dataset) {
+      rollTarget = target.dataset.rollTarget;
+    } else if ("roll" in target.dataset && target.dataset.roll !== "") {
+      rollTarget = target.dataset.roll;
+    } else {
+      rollTarget = target.textContent;
+    }
     const formula = roll + rollTarget;
     dispatch("roll", { formula });
   }

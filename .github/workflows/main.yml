@@ -1,55 +1,55 @@
-# name: release
-# on: push
-# jobs:
-#   release:
-#     runs-on: unbuntu-latest
-#     if: github.ref == 'refs/heads/main'
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
-#       - name: Setup node
-#         uses: actions/setup-node@v2
-#         with:
-#           node-version: 14.17.2
-#       - run: npm install 
-#       - run: |
-#           cd packages/foundry
-#           npm run build
-#       - name: Zip dist
-#         uses: actions/action-zip@v1
-#         with:
-#           files: packages/foundry/dist
-#           dest: packages/foundry/dist/system.zip
-#       - name: Create release
-#         uses: actions/create-release@v1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           tag_name: foundry
-#           release_name: foundry
-#           draft: true
-#           prelrease: false
-#       - name: Upload system.json
-#         uses: actions/upload-rlease-asset@v1.0.1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ steps.create_release.output.upload_url }}
-#           asset_path: packages/foundry/dist/system.json
-#           asset_name: system.json
-#           asset_content_type: application/json
-#       - name: Upload sytem zip
-#         uses: actions/upload-rlease-asset@v1.0.1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ steps.create_release.output.upload_url }}
-#           asset_path: system/foundry/dist/system.zip
-#           asset_name: g4e
-#           asset_content_type: application/zip
-#       - name: Release
-#         uses: eregon/publish-release@v1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           release_id: ${{ steps.create_release.outputs.id }}
+name: release
+on: push
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      # - name: Setup node
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: 14.17.2
+      # - run: npm install 
+      # - run: |
+      #     cd packages/foundry
+      #     npm run build
+      # - name: Zip dist
+      #   uses: actions/action-zip@v1
+      #   with:
+      #     files: packages/foundry/dist
+      #     dest: packages/foundry/dist/system.zip
+      # - name: Create release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: foundry
+      #     release_name: foundry
+      #     draft: true
+      #     prelrease: false
+      # - name: Upload system.json
+      #   uses: actions/upload-rlease-asset@v1.0.1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.output.upload_url }}
+      #     asset_path: packages/foundry/dist/system.json
+      #     asset_name: system.json
+      #     asset_content_type: application/json
+      # - name: Upload sytem zip
+      #   uses: actions/upload-rlease-asset@v1.0.1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.output.upload_url }}
+      #     asset_path: system/foundry/dist/system.zip
+      #     asset_name: g4e
+      #     asset_content_type: application/zip
+      # - name: Release
+      #   uses: eregon/publish-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     release_id: ${{ steps.create_release.outputs.id }}

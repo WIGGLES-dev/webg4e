@@ -664,7 +664,7 @@ export class Character extends Item {
       }
     }, [] as T[]);
   }
-  getConstructor(type: string) {
+  static getConstructor(type: string) {
     if (type.includes("skill")) {
       return Skill;
     } else if (type.includes("technique")) {
@@ -688,7 +688,7 @@ export class Character extends Item {
     try {
       if (data instanceof Array) {
         const instances = data.map((data) => {
-          const constructor = this.getConstructor(data.type);
+          const constructor = Character.getConstructor(data.type);
           return new constructor().loadGcs(data, merge);
         });
         this.addManyItems(instances);

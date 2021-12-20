@@ -1,11 +1,11 @@
 {
   "Actor": {
-    "types": ["character", "party"],
+    "types": [
+      "character",
+      "party"
+    ],
     "templates": {
-      "hit_locations": {},
-      "": {
-        "default": {}
-      }
+      "hit_locations": {}
     },
     "character": {
       "profile": {
@@ -187,7 +187,11 @@
                 "multiplier": -1,
                 "divisor": 1,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge", "halve_st"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge",
+                  "halve_st"
+                ]
               },
               {
                 "state": "Collapse",
@@ -195,7 +199,11 @@
                 "multiplier": 0,
                 "divisor": 1,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge", "halve_st"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge",
+                  "halve_st"
+                ]
               },
               {
                 "state": "Tired",
@@ -203,7 +211,11 @@
                 "multiplier": 1,
                 "divisor": 3,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge", "halve_st"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge",
+                  "halve_st"
+                ]
               },
               {
                 "state": "Tiring",
@@ -238,7 +250,10 @@
                 "multiplier": -5,
                 "divisor": 1,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge"
+                ]
               },
               {
                 "state": "Dying #4",
@@ -246,7 +261,10 @@
                 "multiplier": -4,
                 "divisor": 1,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge"
+                ]
               },
               {
                 "state": "Dying #3",
@@ -254,7 +272,10 @@
                 "multiplier": -3,
                 "divisor": 1,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge"
+                ]
               },
               {
                 "state": "Dying #2",
@@ -262,7 +283,10 @@
                 "multiplier": -2,
                 "divisor": 1,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge"
+                ]
               },
               {
                 "state": "Dying #1",
@@ -270,7 +294,10 @@
                 "multiplier": -1,
                 "divisor": 1,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge"
+                ]
               },
               {
                 "state": "Collapse",
@@ -278,7 +305,10 @@
                 "multiplier": 0,
                 "divisor": 1,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge"
+                ]
               },
               {
                 "state": "Reeling",
@@ -286,7 +316,10 @@
                 "multiplier": 1,
                 "divisor": 3,
                 "addition": 0,
-                "ops": ["halve_move", "halve_dodge"]
+                "ops": [
+                  "halve_move",
+                  "halve_dodge"
+                ]
               },
               {
                 "state": "Wounded",
@@ -495,7 +528,14 @@
     }
   },
   "Item": {
-    "types": ["skill", "technique", "spell", "advantage", "equipment", "note"],
+    "types": [
+      "skill",
+      "technique",
+      "spell",
+      "advantage",
+      "equipment",
+      "note"
+    ],
     "templates": {
       "row-item": {
         "name": "",
@@ -528,14 +568,23 @@
       }
     },
     "skill": {
-      "templates": ["row-item", "skill-like"]
+      "templates": [
+        "row-item",
+        "skill-like"
+      ]
     },
     "technique": {
-      "templates": ["row-item", "skill-like"],
+      "templates": [
+        "row-item",
+        "skill-like"
+      ],
       "default": {}
     },
     "spell": {
-      "templates": ["row-item", "skill-like"],
+      "templates": [
+        "row-item",
+        "skill-like"
+      ],
       "college": "",
       "power_source": "",
       "spell_class": "",
@@ -546,7 +595,9 @@
       "duration": ""
     },
     "advantage": {
-      "templates": ["row-item"],
+      "templates": [
+        "row-item"
+      ],
       "mental": false,
       "physical": false,
       "social": false,
@@ -567,7 +618,9 @@
       }
     },
     "equipment": {
-      "templates": ["row-item"],
+      "templates": [
+        "row-item"
+      ],
       "equipped": true,
       "description": "",
       "quantity": 1,
@@ -578,7 +631,9 @@
       "location": "carried"
     },
     "note": {
-      "templates": ["row-item"]
+      "templates": [
+        "row-item"
+      ]
     }
   }
 }

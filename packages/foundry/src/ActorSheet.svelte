@@ -3,7 +3,6 @@
   import { Character } from "gurpsjs";
   import { GURPSActor } from "./documents/actor";
   import { GURPSItem } from "./documents/item";
-  import { GURPSActorSheet } from "./svelte-actor-sheet";
   import {
     Sheet,
     TailwindProvider,
@@ -89,25 +88,25 @@
         class="absolute whitespace-nowrap flex flex-col"
         style="right: 100%;"
       >
-        <button on:click={() => (settingsEditorRendered = true)}>
+        <button on:click="{() => (settingsEditorRendered = true)}">
           Edit Settings
         </button>
-        <select bind:value={$view}>
+        <select bind:value="{$view}">
           <option value="gcs">GCS</option>
           <option value="tabbed">Tabbed</option>
         </select>
-        <button on:click={() => (attackPenaltyToolRendered = true)}>
+        <button on:click="{() => (attackPenaltyToolRendered = true)}">
           Attack
         </button>
         <button>Speed Range Finder</button>
       </menu>
       <Sheet
-        {character}
-        view={$view}
-        on:notify={handleNotify}
-        on:roll={handleRoll}
-        on:edit={handleEdit}
-        on:sort={handleSort}
+        character="{character}"
+        view="{$view}"
+        on:notify="{handleNotify}"
+        on:roll="{handleRoll}"
+        on:edit="{handleEdit}"
+        on:sort="{handleSort}"
       />
     {:else if actor.type === "party"}
       <!--  -->
@@ -117,12 +116,12 @@
 
 <Application
   class="m-3"
-  component={attackPenaltyTool}
-  bind:rendered={attackPenaltyToolRendered}
+  component="{attackPenaltyTool}"
+  bind:rendered="{attackPenaltyToolRendered}"
 />
 
 <Application
   class="m-3"
-  component={settingsEditor}
-  bind:rendered={settingsEditorRendered}
+  component="{settingsEditor}"
+  bind:rendered="{settingsEditorRendered}"
 />

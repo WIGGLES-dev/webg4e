@@ -13,7 +13,7 @@
     @apply contents;
   }
   form :global(span:first-child) {
-    @apply text-right;
+    @apply text-right font-semibold;
   }
   form :global(fieldset) {
     @apply col-span-2;

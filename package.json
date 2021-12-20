@@ -5,6 +5,7 @@
         "packages/gurpsjs",
         "packages/foundry",
         "packages/dom-utils",
-        "packages/prop"
+        "packages/prop",
+        "packages/ecs"
     ]
 }
