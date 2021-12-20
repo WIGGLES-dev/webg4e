@@ -9,7 +9,7 @@
     "foundry.js"
   ],
   "styles": [
-    "styles.css"
+    "foundry.css"
   ],
   "gridUnits": "yd",
   "download": "https://www.github.com/WIGGLES-dev/webg4e/releases/latest/download/gurps4e.zip",

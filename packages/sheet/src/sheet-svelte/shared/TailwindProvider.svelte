@@ -47,8 +47,9 @@
   th {
     @apply bg-black text-white px-2;
   }
-  tr:nth-child(even) {
-    @apply bg-green-100;
+  tr {
+    @apply even:bg-green-100;
+    @apply hover:bg-blue-200;
   }
   tr.active {
     @apply underline bg-blue-200;
