@@ -6,6 +6,7 @@
         "packages/foundry",
         "packages/dom-utils",
         "packages/prop",
+        "packages/lazy-iter",
         "packages/ecs"
     ]
 }
