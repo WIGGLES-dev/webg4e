@@ -1,31 +1,22 @@
 {
     "compilerOptions": {
-        "strict": true,
-        "strictFunctionTypes": false,
-        "target": "es6",
-        "allowJs": true,
-        "checkJs": true,
-        "moduleResolution": "node",
-        "module": "esnext",
-        "isolatedModules": false,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "sourceMap": true,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "resolveJsonModule": true,
+        "allowJs": false,
+        "noImplicitAny": true,
+        "noImplicitReturns": false,
+        "noImplicitThis": true,
+        "noImplicitOverride": true,
+        "strictNullChecks": true,
+        "alwaysStrict": true,
         "declaration": true,
         "useDefineForClassFields": false,
+        "experimentalDecorators": true,
+        "resolveJsonModule": false,
+        "preserveConstEnums": true,
+        "moduleResolution": "node",
+        "target": "es6",
         "lib": [
-            "ES2020",
-        ],
-        "outDir": "./dist",
-        "baseUrl": "./",
-    },
-    "exclude": [
-        "node_modules",
-        "**/*.spec.ts",
-    ],
+            "WebWorker",
+            "ES2020"
+        ]
+    }
 }
