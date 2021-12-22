@@ -1,6 +1,13 @@
+export function* empty() {
+  return;
+}
+
 export class Lazy<T> implements IterableIterator<T> {
   #generator: Generator<T> = this.#allOf();
   constructor(public source: IterableIterator<T>) {}
+  static empty() {
+    return new Lazy(empty());
+  }
   *#allOf() {
     for (let x of this.source) {
       yield x;
@@ -23,7 +30,9 @@ export class Lazy<T> implements IterableIterator<T> {
   map<O>(cb: (v: T) => O): Lazy<O> {
     return new Lazy(this.#map(cb));
   }
-  *#flat(depth = 1): Generator<T extends Array<infer I> ? I : never> {
+  *#flatten(
+    depth = 1
+  ): Generator<T extends IterableIterator<infer I> ? I : never> {
     for (const x of this.#generator) {
       if (--depth === 0) return;
       if (typeof (x as any)?.[Symbol.iterator] === "function") {
@@ -31,11 +40,11 @@ export class Lazy<T> implements IterableIterator<T> {
       }
     }
   }
-  flat(depth?: number) {
-    return new Lazy(this.#flat(depth));
+  flatten() {
+    return new Lazy(this.#flatten());
   }
   flatMap<O>(cb: (v: T) => IterableIterator<O>): Lazy<O> {
-    return new Lazy(this.map(cb).flat());
+    return this.map(cb).flatten();
   }
   *#filter(cb: (v: T) => boolean) {
     for (const x of this.#generator) {
@@ -58,6 +67,9 @@ export class Lazy<T> implements IterableIterator<T> {
   }
   chain<U>(iterable: IterableIterator<U>): Lazy<T | U> {
     return new Lazy(this.#chain(iterable));
+  }
+  chainMap<U>(cb: (value: T) => IterableIterator<U>): Lazy<T | U> {
+    return this.chain(this.flatMap(cb));
   }
   find(cb: (v: T) => boolean): T | undefined {
     for (const x of this.#generator) {

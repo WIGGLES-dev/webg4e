@@ -1,4 +1,4 @@
-import { Component } from "ecs";
+import { comp } from "ecs";
 
 enum Difficulty {
   Easy,
@@ -7,21 +7,22 @@ enum Difficulty {
   VeryHard,
   Wildcard,
 }
-export class Level extends Component {
-  points = 0;
-  difficulty = Difficulty.Average;
+export const Level = comp<{
+  difficulty: Difficulty;
   baseLevel?: number;
-}
+  points: number;
+}>();
 
-export class Default extends Component {}
+export const Default = comp();
 
-export class Encumbrance extends Component {
-  weight = 0;
-}
+export const Encumbrance = comp<number>();
+
+export const Value = comp<number>();
+
+export const Quantity = comp<number>();
 
 enum FeatureType {}
-export class Feature extends Component {
-  type?: FeatureType;
-}
-
-export class AttributeList {}
+export const Feature = comp<{
+  type: FeatureType;
+  amount: number;
+}>();
