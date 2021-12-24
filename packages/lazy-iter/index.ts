@@ -94,6 +94,9 @@ export class Lazy<T> implements IterableIterator<T> {
     }
     return false;
   }
+  first(): T | undefined {
+    return this.#generator.next().value;
+  }
   reduce(cb: (previousValue: T, currentValue: T) => T): T {
     let acc: T | undefined;
     for (const x of this.#generator) {

@@ -1,14 +1,19 @@
-import { query, sys } from "ecs";
-import { Encumbrance, Level, Feature } from "./components";
+import { sys, World, query, changed, Child, Entity } from "ecs";
+import {
+  Encumbrance,
+  Level,
+  Feature,
+  FeatureBonus,
+  Difficulty,
+  Host,
+  Default,
+} from "./components";
 
-export const computeEncumbrance = sys(
-  [Encumbrance],
-  ([encumbrance], id, world) => {
-    const descendants = world.descendants(id, [Encumbrance]);
-    const eweight = descendants.fold((acc, [eq]) => acc + eq.weight, 0);
-  }
+const computeEncumbrance = sys(
+  (world, q1) => {
+    for (const [entity, enc] of q1) {
+    }
+  },
+  World,
+  query([Entity, Encumbrance])
 );
-
-export const computeSkillLevel = sys([Level], ([level], id, world) => {
-  const features = world.children(id, [Feature]);
-});
