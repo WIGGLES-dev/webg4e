@@ -86,6 +86,14 @@ export class Lazy<T> implements IterableIterator<T> {
     }
     return false;
   }
+  every(cb: (v: T) => boolean): boolean {
+    for (const x of this.#generator) {
+      if (cb(x) != true) {
+        return false;
+      }
+    }
+    return true;
+  }
   includes(value: T): boolean {
     for (const x of this.#generator) {
       if (value === x) {
