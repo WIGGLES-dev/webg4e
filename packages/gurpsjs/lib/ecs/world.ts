@@ -1,4 +1,4 @@
-import { World } from "ecs";
+import { Plugin, World } from "ecs";
 import {
   computeEncumbrance,
   computeRelativeLevel,
@@ -6,19 +6,12 @@ import {
   findLinks,
 } from "./systems";
 
-import { Level, Difficulty } from "./components";
-
-export const GURPS = new World()
-  .addSystem(findLinks)
-  .addSystem(computeEncumbrance)
-  .addSystem(computeRelativeLevel)
-  .addSystem(computeLevel);
-
-GURPS.spawn(
-  Level({
-    difficulty: Difficulty.Hard,
-    points: 0,
-  })
-);
-
-GURPS.tick();
+export class GURPSPlugin extends Plugin {
+  build(world: World) {
+    world
+      .addSystem(computeEncumbrance)
+      .addSystem(computeRelativeLevel)
+      .addSystem(computeLevel)
+      .addSystem(findLinks);
+  }
+}

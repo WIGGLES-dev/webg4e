@@ -1,20 +1,31 @@
 import { Lazy, empty } from "lazy-iter";
 
-type Constructor<T> = new (...args: any[]) => T;
+export type Constructor<T> = new (...args: any[]) => T;
 export type System = (world: World) => void;
 export type ViewPart =
   | ComponentConstructor
   | typeof Entity
+  | typeof World
   | QueryFilter<any>
   | symbol;
 export type View = ViewPart[];
 
-class Hierarchy {
+class Archetype {}
+
+class Hierarchy extends Archetype {
+  indexToEntity: number[] = [];
   parentToChild: number[] = [];
   childToParent: number[] = [];
+  addChild(parent: number, child: number) {}
+  move(from: number, newParent: number) {}
+  removeChild(parent: number, child: number, deep = true) {}
 }
 
-export class World {
+class Child {}
+class Parent {}
+
+export class World implements Iterable<Lazy<Component | undefined>> {
+  static schema = new Map<symbol, ComponentConstructor>();
   #hierarchy = new Hierarchy();
   #components = new Map<Symbol, (Component | undefined)[]>();
   resources = new Map<Function, Resource>();
@@ -39,37 +50,63 @@ export class World {
     }
   }
   iter() {
+    return this[Symbol.iterator]();
+  }
+  [Symbol.iterator](): Lazy<Lazy<Component | undefined>> {
     return new Lazy(this.#iter());
   }
+  toJSON(): string {
+    return "";
+  }
+  static fromJSON(json: string): World {
+    return new World();
+  }
+  load(json: string) {}
   query<T extends View>(...view: T): Lazy<SystemExtract<T>> {
     return this.iter()
       .enumerate()
       .map(([id, comps]) => {
         return view.map((ctor) => {
           if (ctor === Entity) {
-            return new Entity(this, id);
-          } else if (typeof ctor === "symbol") {
-          } else if ("type" in ctor) {
-            switch (ctor.type) {
-              case Filter.Added: {
-              }
-              case Filter.Removed: {
-              }
-              case Filter.Changed: {
-              }
-            }
+            return { comp: new Entity(this, id), keep: true };
+          } else if (ctor === World) {
+            return this;
+          } else if (ctor instanceof Resource) {
+            return this.resources.get(ctor.constructor);
           } else {
-            return comps.find((comp) => {
-              if (comp && "typeId" in ctor) {
+            let optional = false;
+            let comp = comps.find((comp) => {
+              if (typeof ctor === "symbol") {
+                return comp?.typeId === ctor;
+              } else if ("type" in ctor) {
+                optional = ctor.type === Filter.Optional;
+                if (comp && ctor.target.typeId === comp.typeId) {
+                  switch (ctor.type) {
+                    case Filter.Added: {
+                      return comp?.state === ComponentState.Added;
+                    }
+                    case Filter.Removed: {
+                      return comp?.state === ComponentState.Removed;
+                    }
+                    case Filter.Changed: {
+                      return comp?.state === ComponentState.Changed;
+                    }
+                  }
+                }
+              } else if (comp && "typeId" in ctor) {
                 return comp.typeId === ctor.typeId;
-              } else {
-                return false;
               }
+              return false;
             });
+            if (comp === undefined && optional) {
+              return null;
+            } else {
+              return comp;
+            }
           }
         });
       })
-      .filter((view) => !view.includes(undefined)) as Lazy<SystemExtract<T>>;
+      .filter((comps) => !comps.includes(undefined)) as Lazy<SystemExtract<T>>;
   }
   spawn(...components: Component[]): Entity {
     const id = (this.#size += 1);
@@ -99,6 +136,10 @@ export class World {
     this.resources.set(resource.constructor, resource);
     return this;
   }
+  addPlugin(plugin: Plugin): this {
+    plugin.build(this);
+    return this;
+  }
   tick(): this {
     for (const system of this.#systems) {
       system(this);
@@ -107,48 +148,67 @@ export class World {
   }
 }
 
-export enum ComponentState {
-  Changed,
-}
-export interface Marked {
-  typeId: Symbol;
-}
-export interface Component<T = unknown> extends Marked {
-  data: T;
-}
-export type ComponentConstructor<
-  T = unknown,
-  C extends CompConfig<T> = CompConfig<T>
-> = ((data: Partial<T>) => Component<T>) & Marked;
-export interface CompConfig<T> {
-  description?: string;
-  default: T;
+export abstract class Plugin {
+  abstract build(world: World): void;
 }
 
-export const comp = <T, C extends CompConfig<T> = CompConfig<T>>(
-  conf: C
-): ComponentConstructor<T> => {
-  const merge = (data?: T): T => {
-    if (typeof data === "object") {
+export abstract class Bundle {}
+
+export enum ComponentState {
+  NotAdded,
+  NoChange,
+  Changed,
+  Created,
+  Removed,
+  Added,
+}
+export interface Marked {
+  typeId: symbol;
+}
+export interface Component<T = unknown> extends Marked {
+  ns: string;
+  state: ComponentState;
+  data: T;
+}
+export type ComponentConstructor<T = unknown> = ((
+  data?: Partial<T>
+) => Component<T>) &
+  Marked;
+export interface CompConfig<T> {
+  default: T;
+  computed?: Record<string, Function>;
+}
+
+export const ns =
+  (ns: string) =>
+  <T>(name: string) =>
+  <U extends CompConfig<T>>(conf: U): ComponentConstructor<T> => {
+    const typeId = Symbol(name);
+    const fill = (data?: Partial<T>): T => {
+      if (typeof data === "object") {
+        return {
+          ...conf.default,
+          ...data,
+        };
+      }
       return {
-        ...(conf?.default ?? {}),
-        ...data,
+        ...conf.default,
       };
-    } else if (data instanceof Array) {
-      return data;
-    }
-    return conf.default;
-  };
-  const typeId = Symbol(conf?.description);
-  const constructor: ((data: T) => Component<T>) & Marked = (data) => {
-    return {
-      typeId,
-      data: merge(data),
     };
+    const constructor: ComponentConstructor<T> = (data) => {
+      return {
+        ns,
+        state: ComponentState.NotAdded,
+        typeId,
+        data: fill(data),
+        toJSON() {
+          return JSON.stringify(this);
+        },
+      };
+    };
+    constructor.typeId = typeId;
+    return constructor;
   };
-  constructor.typeId = typeId;
-  return constructor as unknown as ComponentConstructor<T>;
-};
 
 type QueryFilter<T extends ComponentConstructor> = {
   type: Filter;
@@ -159,6 +219,7 @@ enum Filter {
   Changed,
   Added,
   Removed,
+  Optional,
 }
 
 export const changed = <T extends ComponentConstructor>(target: T) => {
@@ -179,70 +240,76 @@ export const removed = <T extends ComponentConstructor>(target: T) => {
     target,
   };
 };
+export const optional = <T extends ComponentConstructor>(target: T) => {
+  return {
+    type: Filter.Optional as const,
+    target,
+  };
+};
+
+export const query = <T extends View>(...view: T): [...T] => {
+  return view;
+};
+
+export type ExtractComponent<T> = T extends ComponentConstructor<infer U>
+  ? Component<U>
+  : never;
 
 export type SystemExtract<T extends View | QueryFilter<any>> = {
   [P in keyof T]: T[P] extends ComponentConstructor<infer U>
     ? Component<U>
     : T[P] extends typeof Entity
     ? Entity
-    : T[P] extends QueryFilter<infer V>
-    ? T[P]["type"] extends Filter.Removed
-      ? never
-      : V extends ComponentConstructor<infer V>
-      ? Component<V>
-      : null
-    : T[P] extends ViewPart
-    ? Component
-    : never;
-};
-type Query = View;
-export const query = <T extends View>(...view: T): [...T] => {
-  return view;
-};
-
-export type DependencyInject<T extends any[]> = {
-  [P in keyof T]: T[P] extends Query
-    ? Lazy<SystemExtract<T[P]>>
     : T[P] extends typeof World
     ? World
     : T[P] extends Constructor<Resource>
     ? InstanceType<T[P]> | undefined
+    : T[P] extends QueryFilter<infer V>
+    ? T[P]["type"] extends Filter.Removed
+      ? never
+      : T[P]["type"] extends Filter.Optional
+      ? ExtractComponent<V> | undefined
+      : ExtractComponent<V>
+    : T[P] extends ViewPart
+    ? Component
     : never;
 };
 
-export const sys = <T extends any[]>(
-  run: (...args: DependencyInject<[...T]>) => void,
+export type DependencyInject<T extends any[]> = {
+  [P in keyof T]: T[P] extends View
+    ? Lazy<SystemExtract<T[P]>>
+    : T[P] extends ViewPart
+    ? SystemExtract<[T[P]]>[0]
+    : never;
+};
+
+export const sys = <T extends (View | ViewPart)[]>(
+  run: (...args: DependencyInject<T>) => void,
   ...dependencies: T
 ) => {
   return (world: World) => {
-    const sysArgs = dependencies.map((dep) => {
-      if (dep === World) {
-        return world;
-      } else if (dep instanceof Resource) {
-        return world.resources.get(dep.constructor);
-      } else if (dep instanceof Array) {
-        world.query(...dep);
-      }
-    }) as DependencyInject<[...T]>;
+    const sysArgs = dependencies.map((dep) =>
+      world.query(...(dep instanceof Array ? dep : [dep]))
+    ) as DependencyInject<T>;
     run(...sysArgs);
   };
 };
 
 export class Entity {
   constructor(private world: World, readonly id: number) {}
-  children<T extends Query>(query: T): Lazy<SystemExtract<T>> {
+  children<T extends View>(query: T): Lazy<SystemExtract<T>> {
     return Lazy.empty();
   }
-  descendants<T extends Query>(query: T): Lazy<SystemExtract<T>> {
+  descendants<T extends View>(query: T): Lazy<SystemExtract<T>> {
     return Lazy.empty();
   }
   addChild(...components: Component[]): Entity {
     return this.world.spawn(...components);
   }
-  parent<T extends Query>(query: T): Lazy<SystemExtract<T>> {
+  parent<T extends View>(query: T): Lazy<SystemExtract<T>> {
     return Lazy.empty();
   }
-  ancestors<T extends Query>(query: T): Lazy<SystemExtract<T>> {
+  ancestors<T extends View>(query: T): Lazy<SystemExtract<T>> {
     return Lazy.empty();
   }
 }

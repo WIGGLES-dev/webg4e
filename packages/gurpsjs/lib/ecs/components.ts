@@ -1,4 +1,5 @@
-import { comp, ComponentConstructor, View } from "ecs";
+import { ComponentConstructor, ns } from "ecs";
+const comp = ns("gurps");
 
 export enum Difficulty {
   Easy,
@@ -10,73 +11,74 @@ export enum Difficulty {
 
 export const Level = comp<{
   difficulty: Difficulty;
-  baseLevel: number;
+  baseLevel?: number;
   points: number;
-}>({
+}>("level")({
   default: {
     difficulty: Difficulty.Average,
-    baseLevel: 0,
     points: 0,
   },
 });
 
 export const Link = comp<{
-  that: Map<symbol, Record<string, any>>;
-  prefer?: ComponentConstructor;
+  that: Map<ComponentConstructor, Record<string, any>>;
   match?: number;
-}>({
+}>("link")({
   default: { that: new Map() },
 });
 
 export const Default = comp<{
   modifier: number;
-}>({
+}>("default")({
   default: { modifier: 0 },
 });
 
 export const Encumbrance = comp<{
   amount: number;
   extendedAmount: number;
-}>({
+}>("encumbrance")({
   default: {
     amount: 0,
     extendedAmount: 0,
   },
 });
 
-export const Value = comp<number>({ default: 0 });
+export const Value = comp<number>("value")({ default: 0 });
 
-const Trait = comp<{
+export const Trait = comp<{
   basePoints: number;
   cost: number;
-}>({
+}>("trait")({
   default: {
     basePoints: 0,
     cost: 0,
   },
 });
 
-export const Quantity = comp<number>({ default: 0 });
+export const Quantity = comp<number>("quantity")({ default: 0 });
 
 export enum FeatureType {
   LevelBonus,
 }
-export const Feature = comp<{
-  type: FeatureType;
-  amount: number;
-}>({
-  default: {
-    type: FeatureType.LevelBonus,
-    amount: 0,
-  },
+export const Features = comp<
+  {
+    type: FeatureType;
+    amount: number;
+  }[]
+>("feature")({
+  default: [],
+});
+
+export const Modifiers = comp<{}[]>("modifier")({
+  default: [],
 });
 
 export const Host = comp<{
   features: number;
-}>({
+}>("host")({
   default: { features: 0 },
 });
 
-export const FeatureBonus = comp<number>({
+export const FeatureBonus = comp<number>("feature bonus")({
   default: 0,
 });
