@@ -15,7 +15,6 @@ import {
 
 export const computeTraitCost = sys((q1) => {
   for (const [trait] of q1) {
-    
   }
 }, query(Trait));
 
@@ -23,7 +22,7 @@ export const computeEncumbrance = sys(
   (world, q1) => {
     for (const [entity, enc] of q1) {
       enc.data.extendedAmount = entity
-        .descendants(query(Encumbrance))
+        .descendants(Encumbrance)
         .fold((acc, [encumbrance]) => acc + encumbrance.data.amount, 0);
     }
   },
@@ -33,24 +32,29 @@ export const computeEncumbrance = sys(
 
 export const computeRelativeLevel = sys(
   (q1, q2) => {
-    for (const [level, link] of q1.chain(q2)) {
+    for (const [level] of q1.chain(q2)) {
       let { points, difficulty } = level.data;
       let baseLevel: number;
-      switch (level.data.difficulty) {
+      switch (difficulty) {
         case Difficulty.Easy:
           baseLevel = 0;
+          break;
         case Difficulty.Average:
           baseLevel = -1;
+          break;
         case Difficulty.Hard:
           baseLevel = -2;
+          break;
         case Difficulty.VeryHard:
           baseLevel = -3;
+          break;
         case Difficulty.Wildcard:
           baseLevel = -4;
+          break;
         default:
           baseLevel = 0;
       }
-      if ((difficulty = Difficulty.Wildcard)) {
+      if (difficulty === Difficulty.Wildcard) {
         points /= 3;
       }
       if (points === 1) {
@@ -59,21 +63,19 @@ export const computeRelativeLevel = sys(
       } else {
         baseLevel += 1 + points / 4;
       }
-      if (link?.data.match) {
-      }
       level.data.baseLevel = baseLevel;
     }
   },
-  query(changed(Level), optional(Link)),
+  query(changed(Level)),
   query(added(Level))
 );
 
 export const computeLevel = sys((q1) => {
   for (const [entity, level] of q1) {
-    let ancestor = entity.ancestors(query(Entity, Host)).first();
+    let ancestor = entity.ancestors(Entity, Host).first();
     if (ancestor) {
       const [entity, host] = ancestor;
-      const features = entity.descendants(query(Features));
+      const features = entity.descendants(Features);
       const bonus = features
         .flatMap(([features]) => features.data)
         .filter((feature) => feature.type === FeatureType.LevelBonus)

@@ -9,76 +9,46 @@ export enum Difficulty {
   Wildcard,
 }
 
-export const Level = comp<{
+export class Level extends comp<{
   difficulty: Difficulty;
   baseLevel?: number;
   points: number;
-}>("level")({
-  default: {
-    difficulty: Difficulty.Average,
-    points: 0,
-  },
-});
+}>("level") {}
 
-export const Link = comp<{
+export class Link extends comp<{
   that: Map<ComponentConstructor, Record<string, any>>;
   match?: number;
-}>("link")({
-  default: { that: new Map() },
-});
+}>("link") {}
 
-export const Default = comp<{
+export class Default extends comp<{
   modifier: number;
-}>("default")({
-  default: { modifier: 0 },
-});
+}>("default") {}
 
-export const Encumbrance = comp<{
+export class Encumbrance extends comp<{
   amount: number;
   extendedAmount: number;
-}>("encumbrance")({
-  default: {
-    amount: 0,
-    extendedAmount: 0,
-  },
-});
+}>("encumbrance") {}
 
-export const Value = comp<number>("value")({ default: 0 });
+export class Value extends comp<number>("value") {}
 
-export const Trait = comp<{
-  basePoints: number;
-  cost: number;
-}>("trait")({
-  default: {
-    basePoints: 0,
-    cost: 0,
-  },
-});
+export class Trait extends comp<{ basePoints: number; cost: number }>(
+  "trait"
+) {}
 
-export const Quantity = comp<number>("quantity")({ default: 0 });
+export class Quantity extends comp<number>("quantity") {}
 
 export enum FeatureType {
   LevelBonus,
 }
-export const Features = comp<
+export class Features extends comp<
   {
     type: FeatureType;
     amount: number;
   }[]
->("feature")({
-  default: [],
-});
+>("feature") {}
 
-export const Modifiers = comp<{}[]>("modifier")({
-  default: [],
-});
+export class Modifiers extends comp<{}[]>("modifier") {}
 
-export const Host = comp<{
-  features: number;
-}>("host")({
-  default: { features: 0 },
-});
+export class Host extends comp<{ feature: number }>("host") {}
 
-export const FeatureBonus = comp<number>("feature bonus")({
-  default: 0,
-});
+export class FeatureBonus extends comp<number>("feature bonus") {}

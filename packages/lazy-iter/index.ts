@@ -1,77 +1,111 @@
-export function* empty() {
+function* empty() {
   return;
 }
 
-export class Lazy<T> implements Iterable<T> {
-  constructor(public source: Iterable<T>) {}
-  static empty() {
-    return new Lazy(empty());
-  }
-  *#allOf() {
-    for (let x of this.source) {
-      yield x;
-    }
-  }
-  *#take(count: number) {
-    for (const x of this) {
+type GeneratorFunction<T> = (...args: any[]) => Generator<T>;
+
+export function project<T>(iterable: Iterable<T>) {
+  return function* () {
+    yield* iterable;
+  };
+}
+
+function take<T>(gf: GeneratorFunction<T>, count: number) {
+  return function* (...args: any[]) {
+    for (const x of gf(...args)) {
       if (count-- <= 0) return;
       yield x;
     }
-  }
-  take(count: number) {
-    return new Lazy(this.#take(count));
-  }
-  forEach(cb: (v: T) => void) {}
-  *#map<O>(cb: (v: T) => O) {
-    for (const x of this) {
-      yield cb(x);
-    }
-  }
-  map<O>(cb: (v: T) => O): Lazy<O> {
-    return new Lazy(this.#map(cb));
-  }
-  *#flatten(
-    depth = 1
-  ): Generator<T extends IterableIterator<infer I> ? I : never> {
-    for (const x of this) {
+  };
+}
+
+function flat<T>(
+  gf: GeneratorFunction<T>,
+  depth = 1
+): GeneratorFunction<T extends IterableIterator<infer I> ? I : never> {
+  return function* (...args: any[]) {
+    for (const x of gf(...args)) {
       if (--depth === 0) return;
       if (typeof (x as any)?.[Symbol.iterator] === "function") {
       } else {
       }
     }
-  }
-  flatten() {
-    return new Lazy(this.#flatten());
-  }
-  flatMap<O>(cb: (v: T) => Iterable<O>): Lazy<O> {
-    return this.map(cb).flatten();
-  }
-  *#filter(cb: (v: T) => boolean) {
-    for (const x of this) {
+  };
+}
+
+function map<T, U>(gf: GeneratorFunction<T>, cb: (v: T) => U) {
+  return function* (...args: any[]) {
+    for (const x of gf(...args)) {
+      yield cb(x);
+    }
+  };
+}
+
+function filter<T>(gf: GeneratorFunction<T>, cb: (v: T) => boolean) {
+  return function* (...args: any[]) {
+    for (const x of gf(...args)) {
       if (cb(x)) {
         yield x;
       }
     }
+  };
+}
+
+function chain<T, U>(gf: GeneratorFunction<T>, ...gfs: GeneratorFunction<U>[]) {
+  return function* (...args: any[]) {
+    for (const x of gf(...args)) {
+      yield x;
+    }
+    for (const gf of gfs) {
+      yield* gf(...args);
+    }
+  };
+}
+
+export class Lazy<T> implements Iterable<T> {
+  #gf: GeneratorFunction<T>;
+  constructor(source: Iterable<T> | GeneratorFunction<T>) {
+    if (typeof source === "function") {
+      this.#gf = source;
+    } else {
+      this.#gf = project(source);
+    }
+  }
+  static empty() {
+    return new Lazy(empty());
+  }
+  take(count: number) {
+    return new Lazy(take(this.#gf, count));
+  }
+  forEach(cb: (v: T) => void) {
+    for (const x of this) {
+      cb(x);
+    }
+  }
+  map<O>(cb: (v: T) => O): Lazy<O> {
+    return new Lazy(map(this.#gf, cb));
+  }
+  flatten() {
+    return new Lazy(flat(this.#gf));
+  }
+  flatMap<O>(cb: (v: T) => Iterable<O>): Lazy<O> {
+    return this.map(cb).flatten();
+  }
+  tap(cb: (value: T) => void): this {
+    this.forEach(cb);
+    return this;
   }
   filter(predicate: (value: T) => unknown): Lazy<T>;
   filter<S extends T>(cb: (v: T) => v is S): Lazy<S> {
-    return new Lazy(this.#filter(cb)) as Lazy<S>;
+    return new Lazy(filter(this.#gf, cb)) as Lazy<S>;
   }
-  *#chain<U>(iterable: Iterable<U>) {
-    for (const x of this) {
-      yield x;
-    }
-    for (const x of iterable) {
-      yield x;
-    }
-  }
-  chain<U>(iterable: Iterable<U>): Lazy<T | U> {
-    return new Lazy(this.#chain(iterable));
+  chain<U>(...iterables: Iterable<U>[]): Lazy<T | U> {
+    return new Lazy(chain(this.#gf, ...iterables.map(project)));
   }
   chainMap<U>(cb: (value: T) => Iterable<U>): Lazy<T | U> {
     return this.chain(this.flatMap(cb));
   }
-  find(cb: (v: T) => boolean): T | undefined {
+  find(cb: (v: T) => boolean): T | void {
     for (const x of this) {
       if (cb(x)) {
         return x;
@@ -129,10 +163,14 @@ export class Lazy<T> implements Iterable<T> {
       return [i++, v];
     });
   }
+  /**
+   * Collects the lazy into an array [...]
+   * @returns An array of the lazy values results
+   */
   collect(): T[] {
     return [...this];
   }
   [Symbol.iterator]() {
-    return this.#allOf();
+    return this.#gf();
   }
 }

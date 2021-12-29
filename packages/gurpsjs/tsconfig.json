@@ -6,7 +6,7 @@
         "allowJs": true,
         "checkJs": true,
         "moduleResolution": "node",
-        "module": "esnext",
+        "module": "CommonJS",
         "isolatedModules": false,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
