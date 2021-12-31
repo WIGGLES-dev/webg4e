@@ -1,10 +1,14 @@
+type GeneratorFunction<T> = (...args: any[]) => Generator<T>;
+
 function* empty() {
   return;
 }
 
-type GeneratorFunction<T> = (...args: any[]) => Generator<T>;
+function pass() {
+  return (v: any) => v;
+}
 
-export function project<T>(iterable: Iterable<T>) {
+function project<T>(iterable: Iterable<T>) {
   return function* () {
     yield* iterable;
   };

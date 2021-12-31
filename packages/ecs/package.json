@@ -2,6 +2,8 @@
     "name": "ecs",
     "version": "0.1.0",
     "main": "index.ts",
-    "scripts": {},
+    "scripts": {
+        "test": "ts-node ./test.ts"
+    },
     "dependencies": {}
 }

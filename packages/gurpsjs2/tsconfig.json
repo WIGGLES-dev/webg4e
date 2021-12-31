@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "allowJs": true,
+    },
+    "exclude": [
+        "./pkg"
+    ]
+}

@@ -1,28 +1,27 @@
-import { Lazy, project } from "lazy-iter";
+import { Lazy } from "lazy-iter";
+import { Component, ComponentConstructor, ComponentState } from "./component";
+import { Filter, QueryFilter } from "./query";
+import { SystemExtract, System } from "./system";
+import { Hierarchy } from "./hierarchy";
 
 export type Constructor<T> = new (...args: any[]) => T;
-export type System = (world: World) => void;
+
 export type ViewPart =
   | ComponentConstructor
   | typeof Entity
   | typeof World
-  | QueryFilter<any>
-  | symbol;
+  | QueryFilter;
 export type View = ViewPart[];
 
 class Archetype {}
 
-class Hierarchy extends Archetype {
-  indexToEntity: number[] = [];
-  parentToChild: number[] = [];
-  childToParent: number[] = [];
-  addChild(parent: number, child: number) {}
-  move(from: number, newParent: number) {}
-  removeChild(parent: number, child: number, deep = true) {}
-}
-
-class Child {}
-class Parent {}
+const stages = {
+  preUpdate: Symbol("pre update"),
+  update: Symbol("update"),
+  postUpdate: Symbol("post update"),
+  render: Symbol("render"),
+  postRender: Symbol("render"),
+};
 
 export class World implements Iterable<Lazy<Component | undefined>> {
   static schema = new Map<symbol, ComponentConstructor>();
@@ -36,32 +35,43 @@ export class World implements Iterable<Lazy<Component | undefined>> {
   }
   *#iter() {
     let id = 0;
-    function* yieldEntity(
-      arrs: IterableIterator<(Component | undefined)[]>,
-      id: number
-    ) {
+    function* yieldSet(arrs: Iterable<(Component | undefined)[]>, id: number) {
       for (const arr of arrs) {
         yield arr[id];
       }
     }
-    const arrs = this.#components.values();
     while (id < this.#size) {
-      yield new Lazy(yieldEntity(arrs, id++));
+      const thisId = id++;
+      yield new Lazy(() => yieldSet(this.#components.values(), thisId));
     }
   }
   iter() {
-    return new Lazy(project(this));
+    return new Lazy(this);
   }
   [Symbol.iterator]() {
     return this.#iter();
   }
-  toJSON(): string {
-    return "";
-  }
+
   static fromJSON(json: string): World {
-    return new World();
+    return new World().load(json);
   }
-  load(json: string) {}
+  #replacer() {
+    return (key: string, value: any) => {
+      return value[key];
+    };
+  }
+  #reviver() {
+    return (key: string, value: any) => {
+      return value[key];
+    };
+  }
+  toJSON(): string {
+    return JSON.stringify(this.#components, this.#replacer());
+  }
+  load(json: string): this {
+    JSON.parse(json, this.#reviver());
+    return this;
+  }
   query<T extends View>(...view: T): Lazy<SystemExtract<T>> {
     return this.iter()
       .enumerate()
@@ -76,9 +86,7 @@ export class World implements Iterable<Lazy<Component | undefined>> {
           } else {
             let optional = false;
             let comp = comps.find((comp) => {
-              if (typeof ctor === "symbol") {
-                return comp?.typeId === ctor;
-              } else if ("type" in ctor) {
+              if ("type" in ctor) {
                 optional = ctor.type === Filter.Optional;
                 if (comp && ctor.target.typeId === comp.typeId) {
                   switch (ctor.type) {
@@ -135,8 +143,8 @@ export class World implements Iterable<Lazy<Component | undefined>> {
       }
     }
   }
-  addSystem(system: System): this {
-    this.#systems.push(system);
+  addSystems(...systems: System[]): this {
+    this.#systems.push(...systems);
     return this;
   }
   addResource(resource: Resource): this {
@@ -147,7 +155,22 @@ export class World implements Iterable<Lazy<Component | undefined>> {
     plugin.build(this);
     return this;
   }
-  tick(): this {
+  #subscriptions = new Set<() => void>();
+  stream<T extends View>(...view: T): WorldStream<T> {
+    return {
+      subscribe: (cb) => {
+        const poll = () => this.query(...view).forEach(cb);
+        poll();
+        this.#subscriptions.add(poll);
+        const unsubscribe = () => {
+          this.#subscriptions.delete(poll);
+        };
+        unsubscribe.unsubscribe = unsubscribe;
+        return unsubscribe;
+      },
+    };
+  }
+  tick() {
     for (const system of this.#systems) {
       system(this);
     }
@@ -162,134 +185,47 @@ export class World implements Iterable<Lazy<Component | undefined>> {
         }
       }
     }
+    for (const f of this.#subscriptions) {
+      f();
+    }
     return this;
   }
+}
+
+interface WorldStream<T extends View> {
+  subscribe(
+    cb: (v: SystemExtract<T>) => void
+  ): (() => void) & { unsubscribe: () => void };
 }
 
 export abstract class Plugin {
   abstract build(world: World): void;
 }
 
+type BundlePart = ComponentConstructor | QueryFilter;
+export type BundleData<T extends BundlePart[]> = {
+  [P in keyof T]: T[P] extends ComponentConstructor
+    ? InstanceType<T[P]>["data"]
+    : T[P] extends QueryFilter
+    ? T[P]["type"] extends Filter.Optional
+      ? InstanceType<T[P]["target"]>["data"] | undefined
+      : never
+    : never;
+};
 export abstract class Bundle {}
-
-export enum ComponentState {
-  NotAdded,
-  NoChange,
-  Changed,
-  Removed,
-  Added,
-}
-export interface Marked {
-  ns: string;
-  typeId: symbol;
-}
-export interface Component<T = unknown> extends Marked {
-  state: ComponentState;
-  data: T;
-}
-export interface ComponentConstructor<T = unknown> extends Marked {
-  new (data: T): Component<T>;
-}
-
-export const ns =
-  (ns: string) =>
-  <T>(name: string): ComponentConstructor<T> => {
-    const typeId = Symbol(name);
-    return class {
-      static ns = ns;
-      ns = ns;
-      static typeId = typeId;
-      typeId = typeId;
-      state = ComponentState.NotAdded;
-      constructor(public data: T) {}
-      toJSON() {
-        return JSON.stringify(this);
-      }
-    };
-  };
-
-type QueryFilter<T extends ComponentConstructor> = {
-  type: Filter;
-  target: T;
-};
-
-enum Filter {
-  Changed,
-  Added,
-  Removed,
-  Optional,
-}
-
-export const changed = <T extends ComponentConstructor>(target: T) => {
-  return {
-    type: Filter.Changed as const,
-    target,
-  };
-};
-export const added = <T extends ComponentConstructor>(target: T) => {
-  return {
-    type: Filter.Added as const,
-    target,
-  };
-};
-export const removed = <T extends ComponentConstructor>(target: T) => {
-  return {
-    type: Filter.Removed as const,
-    target,
-  };
-};
-export const optional = <T extends ComponentConstructor>(target: T) => {
-  return {
-    type: Filter.Optional as const,
-    target,
-  };
-};
-
-export const query = <T extends View>(...view: T): [...T] => {
-  return view;
-};
-
-export type ExtractComponent<T> = T extends ComponentConstructor<infer U>
-  ? Component<U>
-  : never;
-
-export type SystemExtract<T extends View | QueryFilter<any>> = {
-  [P in keyof T]: T[P] extends ComponentConstructor<infer U>
-    ? InstanceType<T[P]>
-    : T[P] extends typeof Entity
-    ? Entity
-    : T[P] extends typeof World
-    ? World
-    : T[P] extends Constructor<Resource>
-    ? InstanceType<T[P]> | undefined
-    : T[P] extends QueryFilter<infer V>
-    ? T[P]["type"] extends Filter.Removed
-      ? never
-      : T[P]["type"] extends Filter.Optional
-      ? ExtractComponent<V> | undefined
-      : ExtractComponent<V>
-    : T[P] extends ViewPart
-    ? Component
-    : never;
-};
-
-export type DependencyInject<T extends any[]> = {
-  [P in keyof T]: T[P] extends View
-    ? Lazy<SystemExtract<T[P]>>
-    : T[P] extends ViewPart
-    ? SystemExtract<[T[P]]>[0]
-    : never;
-};
-
-export const sys = <T extends (View | ViewPart)[]>(
-  run: (...args: DependencyInject<T>) => void,
-  ...dependencies: T
-) => {
-  return (world: World) => {
-    const sysArgs = dependencies.map((dep) =>
-      world.query(...(dep instanceof Array ? dep : [dep]))
-    ) as DependencyInject<T>;
-    run(...sysArgs);
+export const bundle = <T extends BundlePart[]>(...components: T) => {
+  return class extends Bundle {
+    components: SystemExtract<T>;
+    constructor(...data: BundleData<T>) {
+      super();
+      this.components = components.map((ctor, i) => {
+        if ("type" in ctor) {
+          return new ctor.target(data[i]);
+        } else {
+          return new ctor(data[i]);
+        }
+      }) as SystemExtract<T>;
+    }
   };
 };
 
