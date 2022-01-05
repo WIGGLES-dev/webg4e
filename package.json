@@ -3,7 +3,7 @@
     "workspaces": [
         "packages/sheet",
         "packages/gurpsjs",
-        "packages/foundry",
+        "packages/gurps4e-foundry",
         "packages/dom-utils",
         "packages/prop",
         "packages/lazy-iter",

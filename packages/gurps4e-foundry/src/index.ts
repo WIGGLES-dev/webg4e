@@ -5,6 +5,10 @@ import { GURPSActorSheet } from "./svelte-actor-sheet";
 import { GURPSItemSheet } from "./svelte-item-sheet";
 import { GURPSActor } from "./documents/actor";
 import { GURPSItem } from "./documents/item";
+import { WorldInterface } from "gurpsjs2";
+
+const world = new WorldInterface();
+
 const init = () => {
   //CONFIG.ui.chat = GURPSChatLog;
   CONFIG.Actor.documentClass = GURPSActor;
@@ -15,7 +19,9 @@ const init = () => {
   Items.registerSheet("gurps4e", GURPSItemSheet, { makeDefault: true });
 };
 const setup = () => {};
-const ready = () => {};
+const ready = () => {
+  WorldInterface.run_foundry();
+};
 Hooks.once("init", init);
 Hooks.once("setup", setup);
 Hooks.once("ready", ready);

@@ -2,8 +2,9 @@
     "compilerOptions": {
         "module": "CommonJS",
         "allowJs": true,
+        "outDir": "./dist"
     },
     "exclude": [
-        "./pkg"
+        "./pkg",
     ]
 }

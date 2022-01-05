@@ -21,6 +21,10 @@ const config = (env) => {
       }
     : undefined;
   return {
+    experiments: {
+      asyncWebAssembly: true,
+      syncWebAssembly: true,
+    },
     mode,
     watch: mode === "development",
     entry: { foundry: "./src/index.ts" },

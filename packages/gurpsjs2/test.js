@@ -1,2 +1,4 @@
-import { hello_world } from "gurpswasm";
-hello_world();
+import { WorldInterface } from "gurpswasm";
+
+const w = new WorldInterface();
+w.run();
