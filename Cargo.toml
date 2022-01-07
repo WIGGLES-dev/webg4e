@@ -1,8 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    "packages/gurpsjs2"
-]
+members = []
 
 [profile.dev.package."*"]
 opt-level = 3

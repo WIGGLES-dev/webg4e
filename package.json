@@ -5,11 +5,7 @@
         "packages/gurpsjs",
         "packages/gurps4e-foundry",
         "packages/dom-utils",
-        "packages/prop",
-        "packages/lazy-iter",
-        "packages/ecs",
-        "packages/gurpsjs2",
-        "packages/gurpsjs2/pkg"
+        "packages/prop"
     ],
     "dependencies": {
         "@types/webpack-dev-server": "^4.5.0",
