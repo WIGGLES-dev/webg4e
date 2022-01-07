@@ -19,9 +19,7 @@ const init = () => {
   Items.registerSheet("gurps4e", GURPSItemSheet, { makeDefault: true });
 };
 const setup = () => {};
-const ready = () => {
-  WorldInterface.run_foundry();
-};
+const ready = () => {};
 Hooks.once("init", init);
 Hooks.once("setup", setup);
 Hooks.once("ready", ready);

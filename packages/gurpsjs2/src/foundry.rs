@@ -9,7 +9,7 @@ pub struct FoundryPlugin;
 
 impl Plugin for FoundryPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Foundry>()
+        app.init_non_send_resource::<Foundry>()
             .add_event::<FoundryEvent>()
             .add_system(proxy_foundry_events.exclusive_system())
             .add_system(sync_ui_state.exclusive_system());
@@ -49,8 +49,6 @@ impl Foundry {
             .map(|js_value| js_value.unwrap().unchecked_into::<bindings::Document>())
     }
 }
-unsafe impl Send for Foundry {}
-unsafe impl Sync for Foundry {}
 
 impl FromWorld for Foundry {
     fn from_world(world: &mut World) -> Self {
@@ -162,7 +160,7 @@ fn sync_ui_state(
 
 pub trait ImportableComponent: Component {}
 
-pub fn import_foundry(mut commands: Commands, foundry: Res<Foundry>) {
+pub fn import_foundry(mut commands: Commands, foundry: NonSend<Foundry>) {
     for actor in foundry.iter_actors() {
         commands
             .spawn()
@@ -178,7 +176,7 @@ pub fn import_foundry(mut commands: Commands, foundry: Res<Foundry>) {
 }
 
 pub fn update_foundry(mut commands: Commands) {}
-pub fn import_component<T: ImportableComponent>(mut commands: Commands, foundry: Res<Foundry>) {
+pub fn import_component<T: ImportableComponent>(mut commands: Commands, foundry: NonSend<Foundry>) {
     for document in foundry.iter_entities() {}
 }
 

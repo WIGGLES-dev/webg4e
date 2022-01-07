@@ -13,8 +13,8 @@ futures = "0.3.19"
 js-sys = "0.3.55"
 bevy = { git="https://github.com/bevyengine/bevy.git", default-features = false }
 bevy_ecs = { git="https://github.com/bevyengine/bevy.git" }
-yew = { git = "https://github.com/yewstack/yew.git" }
 serde = { version = "1.0.117", features = ["derive"] }
+fxhash = "0.2.1"
 
 [dependencies.web-sys]
 features = [
@@ -23,6 +23,7 @@ features = [
   "Document",
   "DocumentFragment",
   "DomTokenList",
+  "DomStringMap",
   "Element",
   "Event",
   "HtmlElement",
