@@ -1,8 +1,7 @@
 {
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "strict": true,
         "strictFunctionTypes": false,
-        "target": "es6",
         "allowJs": true,
         "checkJs": true,
         "moduleResolution": "node",

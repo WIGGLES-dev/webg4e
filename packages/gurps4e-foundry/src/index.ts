@@ -1,16 +1,11 @@
 import "./styles.css";
 import "./shims";
-import { GURPSChatLog } from "./svelte-chat-log";
 import { GURPSActorSheet } from "./svelte-actor-sheet";
 import { GURPSItemSheet } from "./svelte-item-sheet";
 import { GURPSActor } from "./documents/actor";
 import { GURPSItem } from "./documents/item";
-import { WorldInterface } from "gurpsjs2";
-
-const world = new WorldInterface();
 
 const init = () => {
-  //CONFIG.ui.chat = GURPSChatLog;
   CONFIG.Actor.documentClass = GURPSActor;
   CONFIG.Item.documentClass = GURPSItem;
   Actors.unregisterSheet("core", ActorSheet);
