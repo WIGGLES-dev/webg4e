@@ -1,12 +1,5 @@
-<script lang="ts">
-  import { Readable } from "svelte/store";
-  type T = $$Generic;
-  interface $$Slots {
-    default: {
-      value: T;
-    };
-  }
-  export let store: Readable<T>;
+<script>
+  export let store
 </script>
 
-<slot value="{$store}" />
+<slot value={$store} />

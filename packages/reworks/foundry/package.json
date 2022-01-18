@@ -1,9 +1,7 @@
 {
     "name": "foundry",
+    "type": "module",
     "scripts": {
         "dev": "webpack"
-    },
-    "dependencies": {
-        "@league-of-foundry-developers/foundry-vtt-types": "^9.238.1"
     }
 }

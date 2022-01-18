@@ -1,5 +1,4 @@
-//@ts-ignore
-Game.prototype._onPreventDragstart = function (event: DragEvent) {
+Game.prototype._onPreventDragstart = function (event) {
   const target = event.target;
   const hiddenTarget = event.composedPath()[0];
   if (target instanceof HTMLElement) {

@@ -1,0 +1,5 @@
+{
+    "svelteAllowShorthand": true,
+    "svelteStrictMode": true,
+    "semi": false
+}

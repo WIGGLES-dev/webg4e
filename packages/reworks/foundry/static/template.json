@@ -1,0 +1,42 @@
+{
+    "Actor": {
+        "types": [
+            "character",
+            "party"
+        ],
+        "templates": {},
+        "character": {
+            "allies": [],
+            "attributes": {}
+        },
+        "party": {
+            "members": []
+        }
+    },
+    "Item": {
+        "types": [
+            "skill",
+            "trait",
+            "equipment",
+            "template"
+        ],
+        "templates": {},
+        "skill": {
+            "isTechnique": false,
+            "points": 0
+        },
+        "trait": {
+            "basePointCost": 0,
+            "levels": 0,
+            "leveledPointCost": null
+        },
+        "equipment": {
+            "quantity": 1,
+            "weight": 0,
+            "value": 0
+        },
+        "template": {
+            "items": []
+        }
+    }
+}

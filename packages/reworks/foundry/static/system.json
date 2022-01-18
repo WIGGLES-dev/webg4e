@@ -5,11 +5,12 @@
     "version": "0.1.0",
     "templateVersion": 1,
     "author": "Ian Bell",
-    "scripts": [
-        "foundry.js"
+    "esmodules": [
+        "main.js"
     ],
+    "scripts": [],
     "styles": [
-        "foundry.css"
+        "style.css"
     ],
     "gridUnits": "yd",
     "download": "https://www.github.com/WIGGLES-dev/webg4e/releases/latest/download/gurps4e.zip",

@@ -1,60 +1,59 @@
-<script lang="ts">
-  import Tailwind from "./Tailwind.svelte";
-  import TreeTable from "./TreeTable.svelte";
+<script>
   import Observe from "./Observe.svelte";
-  import { derived } from "svelte/store";
-  import { Character } from "../actor";
-  import { Skill, Trait, Equipment } from "../item";
-  import { CompositionContext } from "../composition";
-  import { AnyDocument, tuple } from "../util";
-  export let character: Character;
-  const viewType = character.$getFlag<string>("g4e", "view");
-  const descendants = character.$descendants({ embedded: true });
-  function intoTree<T extends AnyDocument>(ctor: new (...args: any[]) => T) {
-    return function (values: CompositionContext[]) {
-      return values
-        .filter((v): v is CompositionContext<T> => v.document instanceof ctor)
-        .map((v) => tuple(v.cursor, undefined, v.document));
-    };
-  }
-  const skills = derived(descendants, intoTree(Skill));
-  const equipment = derived(descendants, intoTree(Equipment));
-  const traits = derived(descendants, intoTree(Trait));
-
-  $: console.log($skills);
+  import Input from "./form/Input.svelte";
+  export let character;
+  const items = character.$items;
 </script>
 
-<Tailwind>
-  <button on:click="{() => console.log(character)}">Log Character</button>
-  <section>
+<main class="sheet">
+  <section class="sheet-section">
     <div class="flex">
-      <img height="auto" width="160px" src="{$character.img}" alt="" />
-      <input type="text" bind:value="{$character.name}" />
+      <img width="225px" src="{$character.img}" alt="" />
+      <div>
+        <Input class="bg-transparent border border-white p-1" bind:value={$character.name} />
+        <button on:click="{() => console.log(character)}">Log</button>
+      </div>
     </div>
   </section>
-  <TreeTable rows="{$skills}">
-    <svelte:fragment slot="caption">"Skills"</svelte:fragment>
-    <svelte:fragment slot="thead">
-      <tr class="children:Uppercase">
-        <th>name</th>
-        <th>points</th>
-        <th>level</th>
-        <th>difficulty</th>
-        <th>rsl</th>
-        <th>ref</th>
-      </tr>
-    </svelte:fragment>
-    <svelte:fragment let:row>
-      <Observe store="{row}" let:value>
-        <td on:click="{() => row.sheet?.render(true)}">
-          {value.name}
-        </td>
-        <td>{value.data.points}</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </Observe>
-    </svelte:fragment>
-  </TreeTable>
-</Tailwind>
+
+  <section class="sheet-section">
+    <table class="w-full">
+      <caption>Skills</caption>
+      <thead>
+        <tr class="bg-white children:text-left text-black">
+          <th>name</th>
+          <th>points</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each $items.filter((item) => item.type === "skill") as skill, i (skill.id)}
+          <tr>
+            <Observe let:value="{src}" store="{skill}">
+              <td>{src.name}</td>
+              <td>{src.data.points}</td>
+              <td>
+                <button on:click="{() => skill?.sheet.render(true)}">
+                  Edit
+                </button>
+              </td>
+              <td>
+                <button on:click="{() => skill.delete()}">Delete</button>
+              </td>
+            </Observe>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<style lang="postcss">
+  .sheet {
+    @apply text-white;
+  }
+  .sheet-section {
+    @apply m-3 p-3 border border-white;
+  }
+</style>
