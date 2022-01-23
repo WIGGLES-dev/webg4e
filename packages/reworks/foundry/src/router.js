@@ -29,7 +29,7 @@ export function router(Base, map) {
       link.href = href
       link.rel = "stylesheet"
       link.type = "text/css"
-      link.medio = "all"
+      link.media = "all"
       return link
     }
     async _renderInner(...args) {
@@ -38,13 +38,13 @@ export function router(Base, map) {
       if (app && !this.component) {
         const target = document.createElement("div")
         const shadow = target.attachShadow({ mode: "open" })
-        shadow.append(this.createStyleLink("systems/gurps4e/style.css"))
         shadow.append(this.createStyleLink("fonts/fontawesome/css/all.min.css"))
+        shadow.append(this.createStyleLink("systems/gurps4e/main.css"))
         if (app) {
           this.component = new app({
             target: shadow,
             props: {
-              [type]: this.document,
+              document: this.document,
               application: this,
             },
           })

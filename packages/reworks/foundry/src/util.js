@@ -1,25 +1,21 @@
 import { writable, derived } from "svelte/store"
-export const SystemDocumentMixin = (Base) =>
+const pipe =
+  (...fns) =>
+  (input) => {
+    let output
+    for (const fn of fns) {
+      output = fn(input)
+      input = output
+    }
+    return output
+  }
+export const StoreDocumentMixin = (Base) =>
   class extends Base {
     constructor(...args) {
       super(...args)
       this.$data = writable(this.data.toObject())
       this.$items = writable([...(this.items?.values() ?? [])])
-    }
-    *iterEmbeddedEffects() {
-      for (const item of this.items.values()) {
-        yield* item.effects.values()
-      }
-    }
-    prepareDerivedData() {
-      const method = `prepare${this.data.type.toUpperCase()}`
-      this[method]?.()
-    }
-    get source() {
-      return this.data._source
-    }
-    get model() {
-      return this.data.data
+      this.$effects = writable([...(this.effects?.values() ?? [])])
     }
     subscribe(...args) {
       return this.$data.subscribe(...args)
@@ -27,14 +23,14 @@ export const SystemDocumentMixin = (Base) =>
     $getFlag(scope, key) {
       const flagStore = derived(this.$data, (data) => data.flags[scope]?.[key])
       return {
-        subscribe(cb) {
-          flagStore.subscribe(cb)
+        subscribe: (cb) => {
+          return flagStore.subscribe(cb)
         },
-        set(value) {
+        set: (value) => {
           this.setFlag(scope, key, value)
         },
-        update(updater) {
-          const current = this.getFlag(scope, key)
+        update: (updater) => {
+          const value = this.getFlag(scope, key)
           this.setFlag(scope, key, updater(value))
         },
       }
@@ -45,8 +41,9 @@ export const SystemDocumentMixin = (Base) =>
     notifyData() {
       this.$data.set(this.data.toObject())
     }
-    notifyItems() {
+    notifyEmbedded() {
       this.$items.set([...(this.items?.values() ?? [])])
+      this.$effects.set([...(this.effects?.values() ?? [])])
     }
     _onUpdate(...args) {
       const rv = super._onUpdate(...args)
@@ -55,48 +52,146 @@ export const SystemDocumentMixin = (Base) =>
     }
     _onCreate(...args) {
       const rv = super._onCreate(...args)
-      this.parent?.notifyItems()
+      this.parent?.notifyEmbedded()
       return rv
     }
     _onDelete(...args) {
       const rv = super._onDelete(...args)
-      this.parent?.notifyItems()
+      this.parent?.notifyEmbedded()
       return rv
     }
   }
-
-export function sub(store, ...path) {
-  function extract(valueIn) {
-    let valueOut
-    for (const segment of path) {
-      valueOut = valueIn?.[path]
-      valueIn = valueOut
+export const TreeDocumentMixin = (Base) =>
+  class extends Base {
+    constructor(...args) {
+      super(...args)
     }
-    return valueOut
-  }
-  function set(value) {
-    store.update((current) => {
-      let root = current
-      for (let i = 0; i < path.length; ++i) {
-        if (i === path.length - 1 && path[i] in current) {
-          current[path[i]] = value
-        } else if (path[i] in current) {
-          current = current[path[i]]
+    *iterEmbeddedDescendants() {
+      if (this.parent) {
+        for (const child of this.iterEmbeddedChildren()) {
+          yield child
+          yield* child.iterEmbeddedDescendants()
         }
-        break
       }
-      return root
+    }
+    *iterEmbeddedChildren() {
+      if (this.parent) {
+        const children = this.getFlag(game.system.id, "children")
+        if (children) {
+          for (const id of children) {
+            yield this.parent.getEmbeddedDocument("item", id)
+          }
+        }
+      }
+    }
+    getEmbeddedParent() {
+      if (this.parent) {
+        const parent = this.getFlag(game.system.id, "parent")
+        if (parent) {
+          return this.parent.getEmbeddedDocument("item", id)
+        }
+      }
+    }
+    /**
+     * Iterate over the ancestors of the local embedded document tree.
+     * @param {Item} item
+     */
+    *iterEmbeddedAncestors() {
+      if (this.parent) {
+        const parent = this.getEmbeddedParent()
+        if (parent) {
+          yield parent
+          yield* parent.iterEmbeddedAncestors()
+        }
+      }
+    }
+    /**
+     * Add a relationship between two existing embedded documents
+     * @param {Item} child
+     * @param {Item} parent
+     */
+    async addEmbeddedChild(parent, child) {
+      if (child.parent.id !== parent.parent.id)
+        throw new Error(
+          "Attempted to create a relationship between to documents that are not embedded in the same parent"
+        )
+      const currentParent = getEmbeddedParent(child)
+      if (currentParent?.id === parent.id)
+        console.warn(
+          "Attempted to create a link a child to the same existing parent"
+        )
+      if (currentParent) {
+        const filteredChildren =
+          currentParent
+            .getFlag(game.stystem.id, "children")
+            ?.filter((id) => id !== child.id) ?? null
+        await currentParent.setFlag(
+          game.system.id,
+          "children",
+          filteredChildren
+        )
+      }
+      const newChildren = [
+        ...(parent.getFlag(game.system.id, "children") || []),
+        child.id,
+      ]
+      await parent.setFlag(game.system.id, "children", newChildren)
+    }
+  }
+export const SystemDocumentMixin = (Base) =>
+  class extends pipe(StoreDocumentMixin, TreeDocumentMixin)(Base) {
+    get formControls() {
+      const templates = game.system.template[this.documentName].templates
+      const schema = game.system.template[this.documentName][this.type]
+      const controls = {
+        ...(schema || {}),
+      }
+      if (schema && templates) {
+        if (schema.templates) {
+          for (const template of schema.templates) {
+            Object.assign(schema, templates[template] || {})
+          }
+        }
+        Object.assign(controls, schema)
+      }
+      const expandedControls = {}
+    }
+    constructor(...args) {
+      super(...args)
+    }
+    *iterEmbeddedEffects() {
+      for (const item of this.items.values()) {
+        yield* item.effects.values()
+      }
+    }
+    prepareDerivedData() {
+      const type = this.data.type
+      if (typeof type === "string") {
+        const method = `prepare${capitalize(type)}`
+        this[method]?.()
+      }
+    }
+    get source() {
+      return this.data._source
+    }
+    get model() {
+      return this.source.data
+    }
+  }
+
+export function filepicker(options) {
+  return new Promise((resolve, reject) => {
+    const app = new FilePicker({
+      ...options,
+      callback: (...args) => {
+        options?.callback(...args)
+        resolve(app)
+      },
     })
-  }
-  return {
-    subscribe(cb) {
-      store.subscribe((value) => cb(extract(value)))
-    },
-    set(value) {
-      set(value)
-    },
-    update(updater) {
-      store.update((value) => set(updater(extract(value))))
-    },
-  }
+    app.render(true)
+  })
+}
+
+export function capitalize(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1)
 }

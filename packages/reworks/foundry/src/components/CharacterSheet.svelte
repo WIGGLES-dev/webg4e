@@ -1,59 +1,94 @@
 <script>
+  import DataTable from './DataTable.svelte'
+  import { filepicker} from '../util.js'
+  import {Tabs, TabPanel, TabList, Tab} from './tabs/index'
   import Observe from "./Observe.svelte";
   import Input from "./form/Input.svelte";
-  export let character;
+  export let document;
+  let character = document
   const items = character.$items;
+  async function changeImage(e) {
+    filepicker({
+      callback: (path) => {
+        document.update({ img: path })
+      },
+    })
+  }
 </script>
 
-<main class="sheet">
+<main class="m-3 p-3">
   <section class="sheet-section">
     <div class="flex">
-      <img width="225px" src="{$character.img}" alt="" />
+      <img on:click={changeImage} width="225px" src="{$character.img}" alt="" />
       <div>
-        <Input class="bg-transparent border border-white p-1" bind:value={$character.name} />
-        <button on:click="{() => console.log(character)}">Log</button>
+        <Input bind:value={$character.name} />
       </div>
     </div>
   </section>
 
-  <section class="sheet-section">
-    <table class="w-full">
-      <caption>Skills</caption>
-      <thead>
-        <tr class="bg-white children:text-left text-black">
+  <Tabs>
+    <TabList>
+      <Tab>Skills</Tab>
+      <Tab>Equipment</Tab>
+      <Tab>Traits</Tab>
+      <Tab>Weapons</Tab>
+    </TabList>
+    <TabPanel>
+      <DataTable {document} type="skill">
+        <svelte:fragment slot="header">
           <th>name</th>
           <th>points</th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each $items.filter((item) => item.type === "skill") as skill, i (skill.id)}
-          <tr>
-            <Observe let:value="{src}" store="{skill}">
-              <td>{src.name}</td>
-              <td>{src.data.points}</td>
-              <td>
-                <button on:click="{() => skill?.sheet.render(true)}">
-                  Edit
-                </button>
-              </td>
-              <td>
-                <button on:click="{() => skill.delete()}">Delete</button>
-              </td>
-            </Observe>
-          </tr>
-        {/each}
-      </tbody>
-    </table>
-  </section>
+          <th>level</th>
+          <th>ref</th>
+        </svelte:fragment>
+        <svelte:fragment let:row={skill}>
+          <Observe let:value={src} store={skill}>
+            <td>{src.name}</td>
+            <td>{src.data.points}</td>
+            <td>{src.data.level}</td>
+            <td>{src.flags[game.system.id]?.ref ?? ''}</td>
+          </Observe>
+        </svelte:fragment>
+      </DataTable>
+    </TabPanel>
+    <TabPanel>
+      <DataTable {document} type="equipment">
+        <svelte:fragment slot="header">
+          <th>name</th>
+          <th>quantity</th>
+          <th>weight</th>
+          <th>value</th>
+        </svelte:fragment>
+        <svelte:fragment let:row={item}>
+          <Observe let:value={src} store={item}>
+            <td>{src.name}</td>
+            <td>{src.data.quantity}</td>
+            <td>{src.data.weight}</td>
+            <td>{src.data.value}</td>
+          </Observe>
+        </svelte:fragment>
+      </DataTable>
+    </TabPanel>
+    <TabPanel>
+      <DataTable {document} type="trait">
+        <svelte:fragment slot="header">
+          <th>name</th>
+          <th>cost</th>
+        </svelte:fragment>
+        <svelte:fragment let:row={item}>
+          <Observe let:value={src} store={item}>
+            <td>{src.name}</td>
+            <td>0</td>
+          </Observe>
+        </svelte:fragment>
+      </DataTable>
+    </TabPanel>
+    <TabPanel>
+      <!--  -->
+    </TabPanel>
+  </Tabs>
 </main>
 
 <style lang="postcss">
-  .sheet {
-    @apply text-white;
-  }
-  .sheet-section {
-    @apply m-3 p-3 border border-white;
-  }
+  
 </style>

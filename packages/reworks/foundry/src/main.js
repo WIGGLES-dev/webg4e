@@ -5,7 +5,10 @@ import { SystemActiveEffect } from "./effect.js"
 import { router } from "./router.js"
 import CharacterSheet from "./components/CharacterSheet.svelte"
 import SkillEditor from "./components/SkillEditor.svelte"
-import "./styles.css"
+import TraitEditor from "./components/TraitEditor.svelte"
+import EquipmentEditor from "./components/EquipmentEditor.svelte"
+import StandardItemEditor from "./components/StandardItemEditor.svelte"
+import "./style.css"
 Hooks.on("init", () => {
   CONFIG.Actor.documentClass = SystemActor
   CONFIG.Item.documentClass = SystemItem
@@ -21,6 +24,8 @@ Hooks.on("init", () => {
     "base",
     router(ItemSheet, {
       skill: SkillEditor,
+      trait: TraitEditor,
+      equipment: EquipmentEditor,
     }),
     { makeDefault: true }
   )

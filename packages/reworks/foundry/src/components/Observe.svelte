@@ -2,4 +2,4 @@
   export let store
 </script>
 
-<slot value={$store} />
+<slot value={$store} {store} />

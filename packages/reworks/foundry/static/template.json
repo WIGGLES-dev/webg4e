@@ -23,12 +23,14 @@
         "templates": {},
         "skill": {
             "isTechnique": false,
-            "points": 0
+            "points": 0,
+            "difficulty": 0
         },
         "trait": {
             "basePointCost": 0,
+            "hasLevels": false,
             "levels": 0,
-            "leveledPointCost": null
+            "leveledPointCost": 0
         },
         "equipment": {
             "quantity": 1,

@@ -1,10 +1,10 @@
-import { config } from "dotenv";
-config();
-import * as path from "path";
-import { CleanWebpackPlugin } from "clean-webpack-plugin";
-import CopyPlugin from "copy-webpack-plugin";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import preprocess from "svelte-preprocess";
+import { config } from "dotenv"
+config()
+import * as path from "path"
+import { CleanWebpackPlugin } from "clean-webpack-plugin"
+import CopyPlugin from "copy-webpack-plugin"
+import MiniCssExtractPlugin from "mini-css-extract-plugin"
+import preprocess from "svelte-preprocess"
 export default {
   mode: "development",
   watch: true,
@@ -50,7 +50,7 @@ export default {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: "style.css",
+      filename: "[name].css",
     }),
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: true,
@@ -59,4 +59,4 @@ export default {
       patterns: [{ from: "static", to: "./" }],
     }),
   ],
-};
+}

@@ -1,0 +1,4 @@
+.svelte > .window-content {
+  padding: 0px;
+  background: url("/ui/denim.png");
+}
