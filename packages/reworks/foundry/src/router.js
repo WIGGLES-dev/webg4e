@@ -1,5 +1,6 @@
+import App from "./components/App.svelte"
 const form = document.createElement("form")
-export function router(Base, map) {
+export function sheetRouter(Base, map) {
   return class extends Base {
     get form() {
       return form
@@ -32,27 +33,40 @@ export function router(Base, map) {
       link.media = "all"
       return link
     }
+
     async _renderInner(...args) {
-      const type = this.document.data.type
-      const app = map[type]
-      if (app && !this.component) {
-        const target = document.createElement("div")
-        const shadow = target.attachShadow({ mode: "open" })
-        shadow.append(this.createStyleLink("fonts/fontawesome/css/all.min.css"))
-        shadow.append(this.createStyleLink("systems/gurps4e/main.css"))
-        if (app) {
-          this.component = new app({
-            target: shadow,
-            props: {
-              document: this.document,
-              application: this,
-            },
-          })
-        }
-        this.cache = $(target)
-      }
+      const target = document.createElement("div")
+      const shadow = target.attachShadow({ mode: "open" })
+      shadow.append(this.createStyleLink("fonts/fontawesome/css/all.min.css"))
+      shadow.append(this.createStyleLink("systems/gurps4e/main.css"))
+      this.component = new App({
+        target: shadow,
+        props: {
+          map,
+          document: this.document,
+          application: this,
+        },
+      })
+      this.cache = $(target)
       if (this.cache) return this.cache
       return super._renderInner(...args)
     }
+    async close(...args) {
+      await super.close(...args)
+      this.component.$destroy()
+      this.component = null
+    }
   }
+}
+
+export function documentRouter(Base, map) {
+  return new Proxy(Base, {
+    construct(target, args, newTarget) {
+      const type = args[0].type
+      if (type) {
+        return new map[type](...args)
+      }
+      return new Base(...args)
+    },
+  })
 }

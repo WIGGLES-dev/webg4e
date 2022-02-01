@@ -1,16 +1,14 @@
 <script>
   import { onMount } from "svelte"
-  import { sub } from "../../store.js"
   let classList
   export { classList as class }
   export let type
   export let value
+  export let checked
   export let store
-  export let path
   export let readonly
   onMount(() => {
     const cb = (storeValue) => (value = storeValue)
-    if (path && store) store = sub(store, ...path).subscribe(cb)
     return store?.subscribe(cb)
   })
   export let on = "change"
@@ -25,7 +23,7 @@
         break
       }
       case "checkbox": {
-        value = input.checked
+        checked = input.checked
         break
       }
     }
@@ -52,8 +50,9 @@
 
 <input
   {readonly}
-  class="{classList}"
-  type="{inferType(value)}"
-  on:change="{change}"
-  on:input="{input}"
-  {value} />
+  class={classList}
+  type={inferType(value)}
+  on:change={change}
+  on:input={input}
+  {value}
+/>

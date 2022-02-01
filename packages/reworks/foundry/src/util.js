@@ -1,21 +1,13 @@
 import { writable, derived } from "svelte/store"
-const pipe =
-  (...fns) =>
-  (input) => {
-    let output
-    for (const fn of fns) {
-      output = fn(input)
-      input = output
-    }
-    return output
-  }
 export const StoreDocumentMixin = (Base) =>
   class extends Base {
     constructor(...args) {
       super(...args)
-      this.$data = writable(this.data.toObject())
-      this.$items = writable([...(this.items?.values() ?? [])])
-      this.$effects = writable([...(this.effects?.values() ?? [])])
+      this.$data = writable()
+      this.$items = writable()
+      this.$effects = writable()
+      this.notifyData()
+      this.notifyEmbedded()
     }
     subscribe(...args) {
       return this.$data.subscribe(...args)
@@ -42,12 +34,18 @@ export const StoreDocumentMixin = (Base) =>
       this.$data.set(this.data.toObject())
     }
     notifyEmbedded() {
-      this.$items.set([...(this.items?.values() ?? [])])
-      this.$effects.set([...(this.effects?.values() ?? [])])
+      const items = [...(this.items?.values() ?? [])].sort(
+        (a, b) => a.data.sort - b.data.sort
+      )
+      const effects = [...(this.effects?.values() ?? [])]
+      this.$items.set(items)
+      this.$effects.set(effects)
     }
     _onUpdate(...args) {
       const rv = super._onUpdate(...args)
       this.notifyData()
+      this.parent?.notifyData()
+      this.parent?.notifyEmbedded()
       return rv
     }
     _onCreate(...args) {
@@ -79,16 +77,16 @@ export const TreeDocumentMixin = (Base) =>
         const children = this.getFlag(game.system.id, "children")
         if (children) {
           for (const id of children) {
-            yield this.parent.getEmbeddedDocument("item", id)
+            yield this.parent.getEmbeddedDocument("Item", id)
           }
         }
       }
     }
     getEmbeddedParent() {
       if (this.parent) {
-        const parent = this.getFlag(game.system.id, "parent")
+        const parent = this.getSystemFlag("parent")
         if (parent) {
-          return this.parent.getEmbeddedDocument("item", id)
+          return this.parent.getEmbeddedDocument("Item", parent)
         }
       }
     }
@@ -110,32 +108,28 @@ export const TreeDocumentMixin = (Base) =>
      * @param {Item} child
      * @param {Item} parent
      */
-    async addEmbeddedChild(parent, child) {
-      if (child.parent.id !== parent.parent.id)
+    async addEmbeddedChild(child) {
+      if (this.parent == null)
+        throw new Error("Cannot create a relationship on a top level document")
+      if (child.parent.id !== this.parent.id)
         throw new Error(
           "Attempted to create a relationship between to documents that are not embedded in the same parent"
         )
-      const currentParent = getEmbeddedParent(child)
-      if (currentParent?.id === parent.id)
-        console.warn(
+      const currentParent = child.getEmbeddedParent()
+      if (currentParent?.id === this.id)
+        throw new Error(
           "Attempted to create a link a child to the same existing parent"
         )
       if (currentParent) {
         const filteredChildren =
           currentParent
-            .getFlag(game.stystem.id, "children")
+            .getSystemFlag("children")
             ?.filter((id) => id !== child.id) ?? null
-        await currentParent.setFlag(
-          game.system.id,
-          "children",
-          filteredChildren
-        )
+        await currentParent.setSystemFlag("children", filteredChildren)
       }
-      const newChildren = [
-        ...(parent.getFlag(game.system.id, "children") || []),
-        child.id,
-      ]
-      await parent.setFlag(game.system.id, "children", newChildren)
+      const newChildren = [...(this.getSystemFlag("children") || []), child.id]
+      await this.setSystemFlag("children", newChildren)
+      await child.setSystemFlag("parent", this.id)
     }
   }
 export const SystemDocumentMixin = (Base) =>
@@ -164,12 +158,14 @@ export const SystemDocumentMixin = (Base) =>
         yield* item.effects.values()
       }
     }
-    prepareDerivedData() {
-      const type = this.data.type
-      if (typeof type === "string") {
-        const method = `prepare${capitalize(type)}`
-        this[method]?.()
-      }
+    getSystemFlag(key) {
+      return this.getFlag(game.system.id, key)
+    }
+    $getSystemFlag(key) {
+      return this.$getFlag(game.system.id, key)
+    }
+    setSystemFlag(key, value) {
+      return this.setFlag(game.system.id, key, value)
     }
     get source() {
       return this.data._source
@@ -194,4 +190,21 @@ export function filepicker(options) {
 
 export function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+export function pipe(...fns) {
+  return (input) => {
+    let output
+    for (const fn of fns) {
+      output = fn(input)
+      input = output
+    }
+    return output
+  }
+}
+
+export function* concat(...iterators) {
+  for (const iterator of iterators) {
+    yield* iterator
+  }
 }

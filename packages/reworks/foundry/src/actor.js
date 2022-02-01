@@ -1,15 +1,12 @@
-import { SystemDocumentMixin } from "./util.js"
-export class SystemActor extends SystemDocumentMixin(Actor) {
-  prepareRecursiveValues() {
-    const equipment = this.itemTypes.equipment
-    for (const item of equipment) {
-      Object.assign(this.model, { containedWeight: 0, containedValue: 0 })
-      for (const nestedItem of item.iterEmbeddedDescendants()) {
-        item.source.data.containedWeight += nestedItem.source.data.eWeight
-        item.source.data.containedValue += nestedItem.source.data.eValue
-      }
-    }
+import { SystemDocumentMixin, pipe } from "./util.js"
+import { Weapons } from "./model/weapon.js"
+export class SystemActor extends SystemDocumentMixin(Actor) {}
+export class Character extends pipe(Weapons)(SystemActor) {
+  getAttribute(attr) {
+    const { attributes = {} } = this.model
+    return attributes[attr]
   }
+  setAttribute(attr, value) {}
   prepareFeatures() {
     const featureMap = {}
     for (const item of this.items.values()) {
@@ -18,22 +15,32 @@ export class SystemActor extends SystemDocumentMixin(Actor) {
         featureMap[item.id] = features
       }
     }
+    return featureMap
   }
-  getAttribute(attr) {
-    const { attributes = {} } = this.model
-    return attributes[attr]
+  prepareWeapons() {
+    const allWeapons = []
+    for (const item of this.items.values()) {
+      const weapons = item.model.weapons
+      if (weapons == null) continue
+      for (const weapon of weapons) {
+        allWeapons.push({
+          ...weapon,
+        })
+      }
+    }
+    Object.assign(this.model, { allWeapons })
   }
-  setAttribute(attr, value) {}
-  prepareCharacter() {
-    this.prepareRecursiveValues()
+  prepareDerivedData() {
+    super.prepareDerivedData(...arguments)
     this.prepareFeatures()
+    this.prepareWeapons()
     const { skill: skills, equipment: items, trait: traits } = this.itemTypes
     let pointsSpentSkills = 0
     let pointsSpentTechniques = 0
     let pointsSpentTraits = 0
     let pointsSpentPerks = 0
     let pointsSpentQuirks = 0
-    let carriedEquipmentWeight = 0
+    let carriedWeight = 0
     for (const skill of skills) {
       const { points, isTechnique } = skill.model
       if (isTechnique) {
@@ -45,7 +52,7 @@ export class SystemActor extends SystemDocumentMixin(Actor) {
     for (const item of items) {
       const { weight, quantity, equipped } = item.model
       if (equipped) {
-        carriedEquipmentWeight += weight * quantity
+        carriedWeight += weight * quantity
       }
     }
     for (const trait of traits) {
@@ -60,6 +67,7 @@ export class SystemActor extends SystemDocumentMixin(Actor) {
       heavy: basicLift * 6,
       xheavy: basicLift * 8,
     }
+    const encumbranceLevel = 0
     const liftingThresholds = {}
     let pointsSpent =
       pointsSpentSkills +
@@ -67,13 +75,14 @@ export class SystemActor extends SystemDocumentMixin(Actor) {
       pointsSpentTraits +
       pointsSpentPerks +
       pointsSpentQuirks
-
     Object.assign(this.model, {
       pointsSpent,
       basicLift,
       encumbranceThresholds,
+      encumbranceLevel,
       liftingThresholds,
+      carriedWeight,
     })
   }
-  prepareParty() {}
 }
+export class Party {}

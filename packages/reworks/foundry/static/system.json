@@ -3,6 +3,8 @@
     "title": "GURPS 4th edition",
     "description": "",
     "version": "0.1.0",
+    "minimumCoreVersion": "9",
+    "compatibleCoreVersion": "9",
     "templateVersion": 1,
     "author": "Ian Bell",
     "esmodules": [],
@@ -14,5 +16,11 @@
     ],
     "gridUnits": "yd",
     "download": "https://www.github.com/WIGGLES-dev/webg4e/releases/latest/download/gurps4e.zip",
-    "manifest": "https://www.github.com/WIGGLES-dev/webg4e/releases/latest/download/system.json"
+    "manifest": "https://www.github.com/WIGGLES-dev/webg4e/releases/latest/download/system.json",
+    "dependencies": [
+        {
+            "name": "pdfoudnry",
+            "manifest": "https://raw.githubusercontent.com/Djphoenix719/PDFoundry/master/module.json"
+        }
+    ]
 }

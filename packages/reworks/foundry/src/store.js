@@ -1,35 +1,74 @@
-export function sub(store, ...path) {
-  function extract(valueIn) {
-    let valueOut
-    for (const segment of path) {
-      valueOut = valueIn?.[path]
-      valueIn = valueOut
-    }
-    return valueOut
-  }
-  function set(value) {
-    store.update((current) => {
-      let root = current
-      for (let i = 0; i < path.length; ++i) {
-        if (i === path.length - 1 && path[i] in current) {
-          current[path[i]] = value
-        } else if (path[i] in current) {
-          current = current[path[i]]
+import { derived } from "svelte/store"
+export function proxyStore(store) {
+  const path = []
+  function _pathProxy(end) {
+    function extract(value, set) {
+      let i = 0
+      for (const part of path.slice(0, end)) {
+        if ((arguments.length > 1, ++i === end && typeof value === "object")) {
+          value[part] = set
         }
-        break
+        value = value?.[part]
       }
-      return root
+      return value
+    }
+    const set = (value) => {
+      rootStore.update((current) => {
+        extract(current, value)
+        return current
+      })
+    }
+    const update = (cb) => store.update((value) => set(value))
+    const subscribe = (cb) => store.subscribe((value) => cb(extract(value)))
+    const _delete = () => {}
+    const store = {
+      set,
+      update,
+      subscribe,
+      delete: _delete,
+    }
+    return new Proxy(store, {
+      get(target, p, receiver) {
+        path.push(p)
+        _pathProxy(i + 1)
+      },
     })
   }
+  return _pathProxy(store, 0)
+}
+export function undoStore(store) {
+  const copy = (value) => {
+    if (value instanceof Array) return [...value]
+    if (typeof value === "object") return { ...value }
+    return value
+  }
+  let ptr = 0
+  const history = []
+  const undo = (num = 1) => {
+    if (ptr - num > 0) {
+      ptr -= num
+    }
+  }
+  const redo = (num = 1) => {
+    if (ptr + num < history.length) {
+      ptr += num
+    } else {
+      ptr = history.length
+    }
+  }
+  const set = (value) => {
+    history.push(copy(value))
+    ptr++
+    store.set(value)
+  }
+  const update = (cb) => set(cb(history[ptr]))
+  const subscribe = (cb) => cb(history[ptr])
+
   return {
-    subscribe(cb) {
-      store.subscribe((value) => cb(extract(value)))
-    },
-    set(value) {
-      set(value)
-    },
-    update(updater) {
-      store.update((value) => set(updater(extract(value))))
-    },
+    undo,
+    redo,
+    set,
+    update,
+    subscribe,
   }
 }

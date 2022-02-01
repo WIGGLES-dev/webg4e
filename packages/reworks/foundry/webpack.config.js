@@ -26,7 +26,11 @@ export default {
         use: {
           loader: "svelte-loader",
           options: {
-            emitCss: false,
+            compilerOptions: {
+              dev: true,
+              varsReport: false,
+            },
+            emitCss: true,
             preprocess: preprocess({
               postcss: true,
             }),
@@ -48,6 +52,7 @@ export default {
       },
     ],
   },
+  devtool: "source-map",
   plugins: [
     new MiniCssExtractPlugin({
       filename: "[name].css",

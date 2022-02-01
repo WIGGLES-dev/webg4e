@@ -1,9 +1,18 @@
 <script>
-  import StandardItemEditor from "./StandardItemEditor.svelte"
+  import { Form, Input } from "./form/index.js"
+  import { Tabs, Tab, TabList, TabPanel } from "./tabs/index.js"
   export let document
   export let application
   let trait = document
-  const typeHints = {}
 </script>
 
-<StandardItemEditor {typeHints} {document} {application} />
+<Form>
+  <Tabs key="{document.id}">
+    <TabList>
+      <Tab>Data</Tab>
+    </TabList>
+    <TabPanel>
+      <!--  -->
+    </TabPanel>
+  </Tabs>
+</Form>

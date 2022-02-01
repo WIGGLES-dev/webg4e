@@ -6,12 +6,14 @@
   import { setContext, createEventDispatcher } from "svelte"
   import { writable, derived } from "svelte/store"
   const dispatch = createEventDispatcher()
-  export let active = 0
+  export let key
+  export let active = key ? +localStorage.getItem(key) : 0
   const activeStore = writable(typeof active === "number" ? active : 0)
   $: {
     if ($activeStore !== active) {
       active = $activeStore
       dispatch("tabchange", active)
+      if (key) localStorage.setItem(key, active.toString())
     }
   }
   let tabs = 0

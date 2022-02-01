@@ -8,3 +8,8 @@ export const SYSTEM_FLAGS = {
 export const FEATURE_TYPES = {
   bonus: "gives a bonus",
 }
+
+export const FOUNDRY_CSS = [
+  "fonts/fontawesome/css/all.min.css",
+  "systems/gurps4e/main.css",
+]

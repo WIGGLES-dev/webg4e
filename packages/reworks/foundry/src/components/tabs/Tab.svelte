@@ -1,4 +1,5 @@
 <script>
+  import { render } from "../ContextMenu.svelte"
   import { getContext } from "svelte"
   import { TabsContext } from "./Tabs.svelte"
   let classList
@@ -7,7 +8,7 @@
   const { select, selected } = registerTab()
 </script>
 
-<style>
+<style lang="postcss">
   .tab {
     @apply p-1 m-1;
   }

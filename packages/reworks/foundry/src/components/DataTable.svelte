@@ -1,66 +1,86 @@
 <script>
-  import {capitalize} from '../util.js'
-  import Observe from './Observe.svelte'
-  import { render } from './ContextMenu.svelte'
-  export let type
-  export let document
-  export let tree = false
-  export let sortable = false
-  export let rowFilter = (row) => {
-    return row.type === type
-  }
-  const depthCtx = (row) => {
-    const ancestors = [...row.iterEmbeddedAncestors()]
-    return {
-      row,
-      depth: ancestors.length,
+  import { derived } from "svelte/store"
+  import { render } from "./ContextMenu.svelte"
+  import { createEventDispatcher, onMount } from "svelte"
+  import { fly } from "svelte/transition"
+  const dispatch = createEventDispatcher()
+  export let key = undefined
+  export let rowKey = (row, i) => row?.id ?? i
+  export let ctxmenu = false
+  function menuItems(row) {
+    let options
+    if (typeof ctxmenu === "function") options = ctxmenu(row)
+    if (typeof ctxmenu instanceof Array) options = ctxmenu
+    if (options) {
+      return render(options)
     }
   }
-  let items = document.$items
-  let draggable = sortable
-  const dragStartRow = (row) => function (e) {}
+  export let highlight = true
+  export let document
+  export let sortable = false
+  export let draggable = false
+  export let menu = {}
+  export let rows = []
+  let dragging
+  let dragover
+  const dragStartRow = (row) =>
+    function (e) {
+      dragging = row
+      e.dataTransfer.setData("text/plain", row.uuid)
+      const img = new Image()
+      img.src = row.data.img
+      e.dataTransfer.setDragImage(
+        DragDrop.createDragImage(img, 30, 30),
+        -20,
+        -20
+      )
+    }
   const dragRow = (row) =>
     function (e) {
       if (draggable) e.preventDefault()
     }
-  const dropRow = (row) => function (e) {}
+  const dropRow = (row) =>
+    async function (e) {
+      if (sortable) {
+        const draggingI = rows.indexOf(dragging)
+        const targetI = rows.indexOf(row)
+        dispatch("sort", {
+          dragging,
+          target: row,
+          siblings: rows,
+          sortBefore: draggingI > targetI,
+        })
+      }
+    }
   const dragOverRow = (row) =>
     function (e) {
       if (draggable) e.preventDefault()
+      dragover = row
     }
-  const sortHeader = (row) => function (e) {}
-  
+  const dragLeaveRow = (row) => {
+    return function (e) {
+      dragover = null
+    }
+  }
+  const dragEndRow = (row) =>
+    function (e) {
+      dragging = null
+      dragover = null
+    }
+
+  function sortHeader(e) {
+    const data = e.target.dataset.sort
+  }
+
   function addRow() {
-    document.createEmbeddedDocuments('Item', [{
-      type,
-      name: `New ${capitalize(type)}`,
-      data: {},
-      flags: {
-        [game.system.id]: {
-        
-        }
-      }
-    }])
+    dispatch("add")
   }
 </script>
 
-<style>
-  table {
-    @apply w-full text-left;
-  }
-  .data-row {
-    @apply hover:bg-blue-200 hover:text-black;
-  }
-  .data-button {
-    @apply hover:bg-green-500 p-1 hover:text-white w-full;
-  }
-  .warn {
-    @apply hover:bg-red-500;
-  }
-</style>
-
-<menu>
-  <button class="data-button" on:click={addRow}>Add {capitalize(type)}</button>
+<menu class="flex">
+  {#if menu.add}
+    <i class="fas fa-plus data-action" on:click={addRow} />
+  {/if}
 </menu>
 <table>
   {#if $$slots.caption}
@@ -70,43 +90,27 @@
   {/if}
   <thead on:click={sortHeader}>
     <tr>
-      {#if tree}
-        <th />
-      {/if}
       <slot name="header" />
     </tr>
   </thead>
   <tbody>
-    {#each $items.filter(rowFilter).map(depthCtx) as { row, depth }, i (row.id)}
+    {#each rows as row, i (rowKey(row, i))}
       <tr
-        on:contextmenu={render([{
-          label: 'Edit',
-          click: () => {row.sheet?.render(true)}
-        }, {
-          label: 'Delete',
-          click: () => {row.delete()}
-        }])}
         class="data-row"
+        class:highlight
+        class:dragging={dragging === row}
+        class:dragover={dragover === row}
         {draggable}
+        on:contextmenu={menuItems(row)}
         on:dragstart={dragStartRow(row)}
         on:drag={dragRow(row)}
+        on:dragover={dragOverRow(row)}
+        on:dragleave={dragLeaveRow(row)}
         on:drop={dropRow(row)}
-        on:dragover={dragOverRow(row)}>
-        {#if tree && row.getFlag(game.system.id, 'container')}
-          <Observe
-            let:store
-            let:value
-            store={row.$getFlag(game.system.id, 'container open')}>
-            <td
-              style:margin-left="{depth}px"
-              on:click={() => store.set(!value)}>
-              <slot name="toggle">
-                {#if value === true}{'<'}{:else if value === false}{'>'}{/if}
-              </slot>
-            </td>
-          </Observe>
-        {/if}
-        <slot {row} />
+        on:dragend={dragEndRow(row)}
+        transition:fly={{ y: -100, duration: 500 }}
+      >
+        <slot {row} {i} />
       </tr>
     {/each}
   </tbody>
@@ -116,3 +120,29 @@
     </tfoot>
   {/if}
 </table>
+
+<style>
+  menu .data-action {
+    @apply p-3 hover:bg-green-500;
+  }
+  table {
+    @apply w-full text-left;
+  }
+  thead :global(th) {
+    @apply pr-3 capitalize text-lg;
+  }
+  .data-row {
+  }
+  .data-row.highlight {
+    @apply hover:bg-blue-200 hover:text-black;
+  }
+  .data-button {
+    @apply hover:bg-green-500 p-1 hover:text-white w-full;
+  }
+  .dragging {
+    @apply border border-solid border-red-500;
+  }
+  .dragover {
+    @apply border border-solid border-green-500;
+  }
+</style>
