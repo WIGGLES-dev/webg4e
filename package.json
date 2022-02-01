@@ -1,7 +1,7 @@
 {
     "name": "gurps-workspace",
     "workspaces": [
-        "packages/reworks/foundry",
+        "packages/foundry",
         "packages/sheet",
         "packages/gurpsjs",
         "packages/gurps4e-foundry",
