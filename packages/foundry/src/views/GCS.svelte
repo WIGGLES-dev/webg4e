@@ -1,5 +1,5 @@
 <script>
-  import { Form, Image, Label, Input } from "./form/index.js"
+  import { Form, Image, Label, Input } from "../components/form/index.js"
   export let blocks = [
     "reactions",
     "melee",

@@ -2,7 +2,7 @@
   import { Form, Input, Select } from "./form/index.js"
   let rollType = "general"
   let flavor = ""
-  export let mofidiers = []
+  export let modifiers = []
   function roll() {}
 </script>
 

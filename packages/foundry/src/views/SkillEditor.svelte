@@ -1,7 +1,7 @@
 <script>
-  import { Form, Image, Input } from "./form/index.js"
-  import { Tabs, Tab, TabList, TabPanel } from "./tabs/index.js"
-  import WeaponTable from "./WeaponTable.svelte"
+  import { Form, Image, Input } from "../components/form/index.js"
+  import { Tabs, Tab, TabList, TabPanel } from "../components/tabs/index.js"
+  import WeaponTable from "../components/WeaponTable.svelte"
   export let document
   export let application
   let skill = document

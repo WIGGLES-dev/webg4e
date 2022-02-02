@@ -1,4 +1,4 @@
-import App from "./components/App.svelte"
+import Sheet from "./Sheet.svelte"
 const form = document.createElement("form")
 export function sheetRouter(Base, map) {
   return class extends Base {
@@ -8,12 +8,13 @@ export function sheetRouter(Base, map) {
     set form(value) {}
     constructor(...args) {
       super(...args)
+      this.options.template = map[this.object.type]
     }
     static get defaultOptions() {
       return {
         ...super.defaultOptions,
         submitOnChange: false,
-        submitOnClase: false,
+        submitOnClose: false,
         width: 1000,
         height: 750,
         classes: ["svelte"],
@@ -25,34 +26,32 @@ export function sheetRouter(Base, map) {
         return super.render(...args)
       }
     }
-    createStyleLink(href) {
-      const link = document.createElement("link")
-      link.href = href
-      link.rel = "stylesheet"
-      link.type = "text/css"
-      link.media = "all"
-      return link
-    }
-
-    async _renderInner(...args) {
-      const target = document.createElement("div")
-      const shadow = target.attachShadow({ mode: "open" })
-      shadow.append(this.createStyleLink("fonts/fontawesome/css/all.min.css"))
-      shadow.append(this.createStyleLink("systems/gurps4e/main.css"))
-      this.component = new App({
-        target: shadow,
+    async _renderInner() {
+      const links = [
+        "fonts/fontawesome/css/all.min.css",
+        "systems/gurps4e/shadow.css",
+      ].map((href) =>
+        Object.assign(document.createElement("link"), {
+          rel: "stylesheet",
+          type: "text/css",
+          media: "all",
+          href,
+        })
+      )
+      const wrapper = document.createElement("div")
+      const target = wrapper.attachShadow({ mode: "open" })
+      target.append(...links)
+      this.component = new Sheet({
+        target,
         props: {
-          map,
-          document: this.document,
+          document: this.object,
           application: this,
         },
       })
-      this.cache = $(target)
-      if (this.cache) return this.cache
-      return super._renderInner(...args)
+      return jQuery(wrapper)
     }
-    async close(...args) {
-      await super.close(...args)
+    async close() {
+      await super.close(...arguments)
       this.component.$destroy()
       this.component = null
     }

@@ -1,8 +1,8 @@
 <script>
-  import { Form, Label, Input, Image } from "./form/index.js"
-  import { Tabs, Tab, TabPanel, TabList } from "./tabs/index.js"
-  import TextEditor from "./TextEditor.svelte"
-  import WeaponTable from "./WeaponTable.svelte"
+  import { Form, Label, Input, Image } from "../components/form/index.js"
+  import { Tabs, Tab, TabPanel, TabList } from "../components/tabs/index.js"
+  import TextEditor from "../components/TextEditor.svelte"
+  import WeaponTable from "../components/WeaponTable.svelte"
   export let document
   export let application
   let equipment = document

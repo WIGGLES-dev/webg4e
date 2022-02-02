@@ -1,13 +1,13 @@
 <script>
-  import DataTable from "./DataTable.svelte"
-  import Application from "./Application.svelte"
-  import SizeSpeedRange from "./SizeSpeedRange.svelte"
-  import Rolling from "./Rolling.svelte"
-  import { Tabs, TabPanel, TabList, Tab } from "./tabs/index"
+  import DataTable from "../components/DataTable.svelte"
+  import Application from "../components/Application.svelte"
+  import SizeSpeedRange from "../components/SizeSpeedRange.svelte"
+  import Rolling from "../components/Rolling.svelte"
+  import { Tabs, TabPanel, TabList, Tab } from "../components/tabs/index"
   import { pdFoundryInstalled, openPDF } from "../pdfoundry"
   import { capitalize } from "../util.js"
-  import Observe from "./Observe.svelte"
-  import { Form, Input, Image } from "./form/index.js"
+  import Observe from "../components/Observe.svelte"
+  import { Form, Input, Image } from "../components/form/index.js"
   import { FOUNDRY_CSS } from "../constants"
   export let document
   const items = document.$items

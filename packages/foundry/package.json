@@ -2,6 +2,6 @@
     "name": "foundry",
     "type": "module",
     "scripts": {
-        "dev": "webpack"
+        "dev": "snowpack build"
     }
 }

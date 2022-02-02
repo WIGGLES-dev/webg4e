@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind utilities;
+@tailwind components;
+:host {
+  @apply text-white;
+}
+input,
+select,
+textarea {
+  @apply bg-white opacity-75 text-black p-1 h-min;
+}
+
+.warn {
+  @apply hover:bg-red-500;
+}

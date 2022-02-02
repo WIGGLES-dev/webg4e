@@ -15,6 +15,7 @@ export class Trait extends SystemItem {
 export class Skill extends SystemItem {
   prepareDerivedData() {
     super.prepareDerivedData(...arguments)
+    const parent = this.parent
     let { points = 0, difficulty = 0 } = this.model
     if (difficulty === -4) {
       points /= 3

@@ -7,10 +7,10 @@
     "compatibleCoreVersion": "9",
     "templateVersion": 1,
     "author": "Ian Bell",
-    "esmodules": [],
-    "scripts": [
+    "esmodules": [
         "main.js"
     ],
+    "scripts": [],
     "styles": [
         "style.css"
     ],
