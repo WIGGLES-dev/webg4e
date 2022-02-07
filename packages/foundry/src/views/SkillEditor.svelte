@@ -1,7 +1,7 @@
 <script>
   import { Form, Image, Input } from "../components/form/index.js"
   import { Tabs, Tab, TabList, TabPanel } from "../components/tabs/index.js"
-  import WeaponTable from "../components/WeaponTable.svelte"
+  import WeaponTable from "../widgets/WeaponTable.svelte"
   export let document
   export let application
   let skill = document
@@ -17,7 +17,7 @@
     </TabList>
     <TabPanel>
       <div class="flex gap-3">
-        <Image src={$skill.img} width="120px" />
+        <Image bind:src={$skill.img} width="120px" />
         <Input bind:value={$skill.name} />
       </div>
       <div class="flex">
@@ -39,9 +39,10 @@
           {#if parent}
             <label>
               <span>Attr</span>
-              <select>
-                {#each Object.entries($parent.data.attributes) as attr, i (attr.id)}
-                  <option />
+              <select bind:value={$skill.data.attr}>
+                <option value={null}>10</option>
+                {#each $parent.data.attributes as attr, i (attr.id)}
+                  <option value={attr.id}>{attr.name}</option>
                 {/each}
               </select>
             </label>

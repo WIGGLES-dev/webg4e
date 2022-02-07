@@ -1,11 +1,8 @@
 import Sheet from "./Sheet.svelte"
-const form = document.createElement("form")
-export function sheetRouter(Base, map) {
+import { SYSTEM_LINKS } from "./constants.js"
+
+export function sheetRouter(Base, map, options = {}) {
   return class extends Base {
-    get form() {
-      return form
-    }
-    set form(value) {}
     constructor(...args) {
       super(...args)
       this.options.template = map[this.object.type]
@@ -18,6 +15,8 @@ export function sheetRouter(Base, map) {
         width: 1000,
         height: 750,
         classes: ["svelte"],
+        links: [...SYSTEM_LINKS],
+        ...options,
       }
     }
     render(...args) {
@@ -27,20 +26,9 @@ export function sheetRouter(Base, map) {
       }
     }
     async _renderInner() {
-      const links = [
-        "fonts/fontawesome/css/all.min.css",
-        "systems/gurps4e/shadow.css",
-      ].map((href) =>
-        Object.assign(document.createElement("link"), {
-          rel: "stylesheet",
-          type: "text/css",
-          media: "all",
-          href,
-        })
-      )
-      const wrapper = document.createElement("div")
+      this.form = document.createElement("form")
+      const wrapper = this.form.appendChild(document.createElement("div"))
       const target = wrapper.attachShadow({ mode: "open" })
-      target.append(...links)
       this.component = new Sheet({
         target,
         props: {
@@ -48,7 +36,7 @@ export function sheetRouter(Base, map) {
           application: this,
         },
       })
-      return jQuery(wrapper)
+      return jQuery(this.form)
     }
     async close() {
       await super.close(...arguments)

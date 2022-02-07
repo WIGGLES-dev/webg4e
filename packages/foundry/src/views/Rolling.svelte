@@ -1,5 +1,5 @@
 <script>
-  import { Form, Input, Select } from "./form/index.js"
+  import { Form, Input, Select } from "../components/form/index.js"
   let rollType = "general"
   let flavor = ""
   export let modifiers = []

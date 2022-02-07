@@ -1,5 +1,5 @@
 <script>
-  import { shadow } from "../directive.js"
+  import Shadow from "../components/Shadow.svelte"
   export let editor
   export let value
   export let editing = false
@@ -28,9 +28,9 @@
 {#if editing}
   <div use:mount />
 {:else}
-  <div use:shadow={{ mode: "open" }}>
+  <Shadow>
     {@html value}
-  </div>
+  </Shadow>
 {/if}
 <menu>
   {#if editing}

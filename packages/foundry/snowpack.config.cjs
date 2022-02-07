@@ -9,16 +9,20 @@ const foundrySystemDirectory = path.resolve(
 )
 module.exports = {
   mount: {
-    src: {
-      url: "/",
-    },
+    src: "/",
+    assets: "/assets",
   },
   buildOptions: {
     out: foundrySystemDirectory,
     clean: true,
+    watch: true,
+  },
+  devOptions: {
+    tailwindConfig: "./tailwind.config.cjs",
   },
   plugins: [
     "@snowpack/plugin-postcss",
+    "./json-import.cjs",
     [
       "@snowpack/plugin-svelte",
       {

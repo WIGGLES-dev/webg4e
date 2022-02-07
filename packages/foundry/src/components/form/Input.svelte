@@ -55,4 +55,5 @@
   on:change={change}
   on:input={input}
   {value}
+  {checked}
 />

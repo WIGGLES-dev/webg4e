@@ -2,6 +2,6 @@
     "name": "foundry",
     "type": "module",
     "scripts": {
-        "dev": "snowpack build"
+        "dev": "snowpack build --reload"
     }
 }

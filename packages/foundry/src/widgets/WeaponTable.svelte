@@ -1,5 +1,5 @@
 <script>
-  import DataTable from "./DataTable.svelte"
+  import DataTable from "../components/DataTable.svelte"
   export let document
   function addWeapon(e) {
     const weapons = document.getSystemFlag("weapons") || []
@@ -23,7 +23,12 @@
   }
 </script>
 
-<DataTable highlight={false} rows={weapons} on:add={addWeapon}>
+<DataTable
+  menu={{ add: true }}
+  highlight={false}
+  rows={weapons}
+  on:add={addWeapon}
+>
   <svelte:fragment slot="header">
     <th>Name</th>
     <th>Damage</th>

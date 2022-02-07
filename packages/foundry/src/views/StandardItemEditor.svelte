@@ -1,8 +1,8 @@
 <script>
   import { filepicker } from "../util.js"
-  import Form from "./form/Form.svelte"
-  import Input from "./form/Input.svelte"
-  import { Tabs, TabList, TabPanel, Tab } from "./tabs/index.js"
+  import Form from "../components/form/Form.svelte"
+  import Input from "../components/form/Input.svelte"
+  import { Tabs, TabList, TabPanel, Tab } from "../components/tabs/index.js"
   export let document
   export let application
   async function changeImage(e) {
@@ -14,10 +14,6 @@
   }
 </script>
 
-<style lang="postcss">
-
-</style>
-
 <Tabs>
   <TabList>
     <Tab>Data</Tab>
@@ -27,14 +23,10 @@
   <TabPanel>
     <Form>
       <fieldset class="flex">
-        <img
-          on:click="{changeImage}"
-          width="120px"
-          src="{$document.img}"
-          alt="" />
+        <img on:click={changeImage} width="120px" src={$document.img} alt="" />
         <label>
           <span>Name</span>
-          <Input bind:value="{$document.name}" />
+          <Input bind:value={$document.name} />
         </label>
       </fieldset>
       <hr class="my-3" />
@@ -69,3 +61,6 @@
     <!--  -->
   </TabPanel>
 </Tabs>
+
+<style lang="postcss">
+</style>

@@ -1,15 +1,17 @@
 export const SYSTEM_FLAGS = {
   children: "children",
   parent: "parent",
-  open: "container open",
-  container: "container",
+  desc: "desc",
+  pdfreference: "pdfreference",
+  created: "created",
+  modified: "modified",
 }
 
 export const FEATURE_TYPES = {
   bonus: "gives a bonus",
 }
 
-export const FOUNDRY_CSS = [
+export const SYSTEM_LINKS = [
+  "systems/gurps4e/shadow.css",
   "fonts/fontawesome/css/all.min.css",
-  "systems/gurps4e/main.css",
 ]

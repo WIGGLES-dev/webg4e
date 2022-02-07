@@ -1,11 +1,11 @@
 <script>
-  import { derived } from "svelte/store"
   import { render } from "./ContextMenu.svelte"
-  import { createEventDispatcher, onMount } from "svelte"
+  import { createEventDispatcher } from "svelte"
   import { fly } from "svelte/transition"
   const dispatch = createEventDispatcher()
   export let key = undefined
   export let rowKey = (row, i) => row?.id ?? i
+  export let setData = (row) => {}
   export let ctxmenu = false
   function menuItems(row) {
     let options
@@ -26,7 +26,12 @@
   const dragStartRow = (row) =>
     function (e) {
       dragging = row
-      e.dataTransfer.setData("text/plain", row.uuid)
+      const data = setData(row)
+      if (typeof data) {
+        for (const [key, value] of Object.entries(data)) {
+          e.dataTransfer.setData(key, value)
+        }
+      }
       const img = new Image()
       img.src = row.data.img
       e.dataTransfer.setDragImage(
@@ -108,7 +113,7 @@
         on:dragleave={dragLeaveRow(row)}
         on:drop={dropRow(row)}
         on:dragend={dragEndRow(row)}
-        transition:fly={{ y: -100, duration: 500 }}
+        transition:fly={{ x: -100, duration: 250 }}
       >
         <slot {row} {i} />
       </tr>
@@ -123,7 +128,7 @@
 
 <style>
   menu .data-action {
-    @apply p-3 hover:bg-green-500;
+    @apply p-1 hover:bg-green-500 text-xs;
   }
   table {
     @apply w-full text-left;

@@ -1,22 +1,42 @@
-import { SystemDocumentMixin, pipe } from "./util.js"
+import { pipe } from "./util.js"
+import { SystemDocumentMixin } from "./mixins/document.js"
 import { Weapons } from "./model/weapon.js"
 
 export class SystemItem extends pipe(SystemDocumentMixin, Weapons)(Item) {}
 
 export class Trait extends SystemItem {
+  static cr = {
+    Never: 0,
+    Rarely: 1,
+    FairlyOften: 2,
+    QuiteOften: 3,
+    AlmostAllOfTheTime: 4,
+    NoneRequired: 5,
+  }
   prepareDerivedData() {
     super.prepareDerivedData(...arguments)
-    const { basePointCost, levels, leveledPointCost } = this.model
+    const {
+      roundDown = false,
+      hasLevels = false,
+      hasHalfLevel = false,
+      basePointCost = 0,
+      levels = 0,
+      leveledPointCost = 0,
+    } = this.model
+    const modifiers = this.getSystemFlag("modifiers") || []
+    let points = basePointCost
+    if (hasLevels) points += levels * leveledPointCost
+    if (hasHalfLevel) points += leveledPointCost / 2
+    points = (roundDown ? Math.floor : Math.ceil)(points)
     Object.assign(this.model, {
-      points: basePointCost + levels * leveledPointCost,
+      points,
     })
   }
 }
 export class Skill extends SystemItem {
   prepareDerivedData() {
     super.prepareDerivedData(...arguments)
-    const parent = this.parent
-    let { points = 0, difficulty = 0 } = this.model
+    let { points = 0, difficulty = 0, attr } = this.model
     if (difficulty === -4) {
       points /= 3
     }
@@ -27,10 +47,8 @@ export class Skill extends SystemItem {
     } else {
       rsl += 1 + points / 4
     }
-    let base = 10
-    let level = Math.floor(base + rsl)
     Object.assign(this.model, {
-      level,
+      rsl,
     })
   }
 }

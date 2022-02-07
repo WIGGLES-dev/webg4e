@@ -6,8 +6,10 @@
         ],
         "templates": {},
         "character": {
-            "allies": [],
-            "attributes": {}
+            "points": 150,
+            "attributes": "@import ../static/basic.attributes",
+            "signatureGear": [],
+            "allies": []
         },
         "party": {
             "members": []
@@ -18,25 +20,40 @@
             "skill",
             "trait",
             "equipment",
+            "attribute",
+            "location",
             "template"
         ],
         "templates": {},
         "skill": {
+            "attr": null,
             "isTechnique": false,
             "points": 0,
             "difficulty": 0
         },
         "trait": {
+            "roundDown": false,
             "basePointCost": 0,
             "hasLevels": false,
+            "hasHalfLevel": false,
             "levels": 0,
-            "leveledPointCost": 0
+            "leveledPointCost": 0,
+            "cr": 0,
+            "type": {
+                "mental": false,
+                "physical": false,
+                "social": false,
+                "exotic": false,
+                "supernatural": false
+            }
         },
         "equipment": {
             "quantity": 1,
             "weight": 0,
             "value": 0
         },
+        "attribute": {},
+        "location": {},
         "template": {
             "items": []
         }

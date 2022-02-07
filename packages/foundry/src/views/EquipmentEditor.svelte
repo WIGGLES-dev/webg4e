@@ -2,7 +2,7 @@
   import { Form, Label, Input, Image } from "../components/form/index.js"
   import { Tabs, Tab, TabPanel, TabList } from "../components/tabs/index.js"
   import TextEditor from "../components/TextEditor.svelte"
-  import WeaponTable from "../components/WeaponTable.svelte"
+  import WeaponTable from "../widgets/WeaponTable.svelte"
   export let document
   export let application
   let equipment = document
@@ -20,7 +20,7 @@
     </TabList>
     <TabPanel>
       <div class="flex">
-        <Image src={$equipment.img} width="120px" />
+        <Image bind:src={$equipment.img} width="120px" />
         <Input bind:value={$equipment.name} />
       </div>
       <div class="flex">

@@ -6,7 +6,7 @@ export class Dice {
   altCount = this.count
   altModifier = this.modifier
   constructor() {}
-  static from(count: number, modifier = 0, sides = 6, multiplier = 1) {
+  static from(count, modifier = 0, sides = 6, multiplier = 1) {
     const dice = new Dice()
     dice.count = Math.max(count, 0)
     dice.modifier = modifier
@@ -14,7 +14,7 @@ export class Dice {
     dice.multiplier = multiplier
     return dice
   }
-  static fromString(string: string) {
+  static fromString(string) {
     string = string.trim().toLowerCase()
     const dice = new Dice()
     dice.count = Dice.extractValue(string)
@@ -56,7 +56,7 @@ export class Dice {
     }
     return dice
   }
-  static extractDicePosition(string: string) {
+  static extractDicePosition(string) {
     let start = -1
     let max = string.length
     let state = 0
@@ -122,10 +122,10 @@ export class Dice {
       }
     }
   }
-  static nextChar(string: string) {
+  static nextChar(string) {
     return string === "" ? 0 : string.charAt(0)
   }
-  static extractValue(string: String) {
+  static extractValue(string) {
     let value = 0
     while (string !== "") {
       let ch = string.charAt(0)
@@ -148,18 +148,18 @@ export class Dice {
     dice.multiplier = this.multiplier
     return dice
   }
-  add(modifier: number) {
+  add(modifier) {
     this.modifier += modifier
     return this
   }
-  addDice(dice: Dice): this {
+  addDice(dice) {
     this.count += dice.count
     this.sides = Math.max(this.sides, dice.sides)
     this.modifier += dice.modifier
     this.multiplier += dice.multiplier - 1
     return this
   }
-  multiply(multiply: number) {
+  multiply(multiply) {
     this.count *= multiply
     this.modifier *= multiply
     if (this.multiplier != 1) {

@@ -1,16 +1,19 @@
 <script context="module">
   import ContextMenu from "./ContextMenu.svelte"
-  const roots = new Map()
+  import { get_root_for_style } from "svelte/internal"
+  let menus = new Map()
+  function getMenu(node) {
+    const target = get_root_for_style(node)
+    if (menus.has(target)) return menus.get(target)
+    const menu = new ContextMenu({
+      target,
+    })
+    menus.set(target, menu)
+    return menu
+  }
   export function render(options) {
     return function (event) {
-      const root = event.target.getRootNode()
-      if (!roots.has(root)) {
-        const app = new ContextMenu({
-          target: root,
-        })
-        roots.set(root, app)
-      }
-      const menu = roots.get(root)
+      const menu = getMenu(event.target)
       menu.render({
         event,
         options,
@@ -78,19 +81,23 @@
 {#if open}
   <ul use:poppify class="bg-white text-black absolute" style:z-index="1000">
     {#each options as option, i}
-      <li
-        class:disabled={option.can === false}
-        class:warn={option.warn}
-        class="p-3 hover:bg-green-500 hover:text-white {option.class || ''}"
-        on:click|capture|stopPropagation={() => {
-          if (option.can !== false) {
-            option.click()
-            close()
-          }
-        }}
-      >
-        <slot {option}>{option.label}</slot>
-      </li>
+      {#if option instanceof Array}
+        <!--  -->
+      {:else}
+        <li
+          class:disabled={option.can === false}
+          class:warn={option.warn}
+          class="p-3 hover:bg-green-500 hover:text-white {option.class || ''}"
+          on:click|capture|stopPropagation={() => {
+            if (option.can !== false) {
+              option.click()
+              close()
+            }
+          }}
+        >
+          <slot {option}>{option.label}</slot>
+        </li>
+      {/if}
     {/each}
   </ul>
 {/if}

@@ -1,35 +1,5 @@
 <script>
-  function speedRange(distance) {
-    const penalty = Math.round(2 - 6 * Math.log10(distance))
-    return Math.min(0, penalty)
-  }
-  function size(length) {
-    return 6 * Math.log10(length) - 2
-  }
-  function linearMeasurement(size) {
-    if (size >= 0) {
-      // 2,3,5,7,10,15
-      const step = Math.floor(size / 6)
-      const round = size - step * 6
-      const pow = Math.pow(10, step + 1)
-      switch (round) {
-        case 0:
-          return 2 * pow
-        case 1:
-          return 3 * pow
-        case 2:
-          return 5 * pow
-        case 3:
-          return 7 * pow
-        case 4:
-          return 10 * pow
-        case 5:
-          return 15 * pow
-      }
-    } else {
-      return 0
-    }
-  }
+  import { linearMeasurement } from "../formula.js"
   function displayMeasurement(number) {
     if (number > 2) {
       return `${number} yd`
