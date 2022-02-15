@@ -16,6 +16,13 @@ Hooks.on("ready", () => {
 })
 
 Hooks.on("hotbarDrop", (hotbar, data, slot) => {})
+Hooks.on("renderHotbar", (hotbar, element, dat) => {
+  element = element.get(0)
+  element.addEventListener("drop", (e) => {
+    const data = e.dataTransfer.getData(`foundry/${game.system.id}/hotbar`)
+    console.log(data)
+  })
+})
 
 class MacroRecorder {
   constructor(target) {

@@ -10,7 +10,7 @@ textarea {
   @apply bg-white opacity-75 text-black p-1 h-min outline-none;
 }
 .warn {
-  @apply hover:bg-red-500;
+  @apply hover:bg-red-500 p-2;
 }
 .contrast {
   @apply p-2;

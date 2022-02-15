@@ -20,3 +20,13 @@ Object.defineProperties(KeyboardManager.prototype, {
     },
   },
 })
+
+function updateSheetTitle(document, changes) {
+  const { sheet } = document
+  if (sheet.rendered && "name" in changes) {
+    sheet.element.find(".window-title").text(changes.name)
+  }
+}
+
+Hooks.on("updateActor", updateSheetTitle)
+Hooks.on("updateItem", updateSheetTitle)

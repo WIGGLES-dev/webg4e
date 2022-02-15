@@ -12,6 +12,7 @@ async function delegateClick(e) {
   const dataset = path.find(
     (node) => node.dataset && "formula" in node.dataset
   )?.dataset
+  if (e.shiftKey) return
   if (dataset) {
     const { formula, uuid } = dataset
     const document = await fromUuid(uuid)

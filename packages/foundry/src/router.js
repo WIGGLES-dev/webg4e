@@ -2,7 +2,7 @@ import Sheet from "./Sheet.svelte"
 import { SYSTEM_LINKS } from "./constants.js"
 
 export function sheetRouter(Base, map, options = {}) {
-  return class extends Base {
+  return class SystemSheet extends Base {
     constructor() {
       super(...arguments)
       this.options.template = map[this.object.type]

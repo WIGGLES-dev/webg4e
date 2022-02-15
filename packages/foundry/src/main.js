@@ -1,6 +1,8 @@
 import "./shims.js"
 import "./widgets/ModifierBucket.svelte"
 import "./macro.js"
+import "./config.js"
+import { Settings } from "./config.js"
 import { Character, Party, Template } from "./actor.js"
 import { Trait, Skill, Equipment, HitLocation, Attribute } from "./item.js"
 import { SystemActiveEffect } from "./effect.js"
@@ -9,17 +11,7 @@ import { delegate } from "./delegate.js"
 
 delegate(window)
 
-function updateSheetTitle(document, changes) {
-  const { sheet } = document
-  if (sheet.rendered && "name" in changes) {
-    sheet.element.find(".window-title").text(changes.name)
-  }
-}
-
-Hooks.on("updateActor", updateSheetTitle)
-Hooks.on("updateItem", updateSheetTitle)
-
-function applyTemplate(actor, sheet, data) {
+Hooks.on("dropActorSheet", (actor, sheet, data) => {
   if (data.type === "Actor") {
     const actor = game.actors.get(data.id)
     if (actor.type === "template") {
@@ -41,9 +33,24 @@ function applyTemplate(actor, sheet, data) {
       return false
     }
   }
-}
+})
 
-Hooks.on("dropActorSheet", applyTemplate)
+Hooks.on("renderSystemSheet", (app, element) => {
+  if (!app.actor) return
+  element.get(0).addEventListener("drop", async (e) => {
+    const keep =
+      game.settings.get(game.system.id, Settings.ItemTransfer) === "keep"
+    const id = e.dataTransfer.getData(`foundry/${game.system.id}/sheet2sheet`)
+    if (!id) return
+    const item = await fromUuid(id)
+    if (item.actor?.id === app.actor.id) return
+    const src = item.toObject()
+    await app.actor.createEmbeddedDocuments("Item", [src])
+    if (!keep) {
+      await item.delete()
+    }
+  })
+})
 
 Hooks.on("init", () => {
   CONFIG.Actor.documentClass = documentRouter(Actor, {

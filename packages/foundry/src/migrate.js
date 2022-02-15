@@ -1,0 +1,4 @@
+const schema = {
+  Item: {},
+  Actor: {},
+}

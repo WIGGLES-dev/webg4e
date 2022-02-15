@@ -1,5 +1,6 @@
 <script>
   import DataTable from "../components/DataTable.svelte"
+  import ItemGrid from "../widgets/ItemGrid.svelte"
   import Popper from "../components/Popper.svelte"
   import Rolling from "./Rolling.svelte"
   import Observe from "../components/Observe.svelte"
@@ -21,24 +22,22 @@
   const data = document.$data
   let speedRangeTool = 0
   const openApps = new Set()
-  function openApp({ component, props = {}, title = "", options }) {
-    if (openApps.has(component)) return
-    openApps.add(component)
+  function openApp({ props = {}, options }) {
+    if (openApps.has(options.component)) return
+    openApps.add(options.component)
     const app = new SvelteApplication(
       {
-        application,
         document,
         ...props,
       },
       {
-        title,
         ...options,
         links: SYSTEM_LINKS,
-        component,
+        shadow: { mode: "open" },
       }
     )
     app.on("close", () => {
-      openApps.delete(component)
+      openApps.delete(options.component)
     })
     app.render(true)
   }
@@ -66,6 +65,8 @@
       }
       return {
         "text/plain": JSON.stringify(macro),
+        [`foundry/${game.system.id}/hotbar`]: JSON.stringify(macro),
+        [`foundry/${game.system.id}/sheet2sheet`]: row.uuid,
       }
     }
   }
@@ -170,9 +171,10 @@
     type="button"
     on:click={() =>
       openApp({
-        component: SizeSpeedRange,
-        props: {},
-        title: "Size Speed & Range Tool",
+        options: {
+          title: "Size Speed & Range Tool",
+          component: SizeSpeedRange,
+        },
       })}
     class="contrast"
   >
@@ -182,9 +184,10 @@
     type="button"
     on:click={() => {
       openApp({
-        component: Rolling,
-        props: {},
-        title: "Rolling Tool",
+        options: {
+          title: "Rolling Tool",
+          component: Rolling,
+        },
       })
     }}
     class="contrast"
@@ -195,12 +198,10 @@
     type="button"
     on:click={() =>
       openApp({
-        component: Settings,
-        props: {
-          document,
-          application,
+        options: {
+          title: "Attribute Editor",
+          component: Settings,
         },
-        title: "Attribute Editor",
       })}
     class="contrast"
   >
@@ -401,7 +402,23 @@
     <Tab>Weapons</Tab>
   </TabList>
   <TabPanel>
-    <DataTable
+    <ItemGrid
+      setData={setItemData("skill")}
+      type="skill"
+      {document}
+      let:item={skill}
+      menu={{ add: true }}
+    >
+      <div
+        class="rollable"
+        data-formula="3d6ms{skill.model.level}"
+        data-uuid={character.uuid}
+      >
+        <div class="text-center">{skill.name}</div>
+        <div class="text-2xl text-center">{skill.model.level}</div>
+      </div>
+    </ItemGrid>
+    <!-- <DataTable
       menu={{ add: true }}
       ctxmenu={menuItems}
       setData={setItemData("skill")}
@@ -432,7 +449,7 @@
         </td>
         <td>{src.flags[game.system.id]?.pdfreference ?? ""}</td>
       </Observe>
-    </DataTable>
+    </DataTable> -->
   </TabPanel>
   <TabPanel>
     <DataTable
@@ -525,12 +542,11 @@
     box-shadow: 0 0 20px #000;
   }
   .denim {
-    background: url("/ui/denim.png");
+    background-color: rgb(35, 34, 29);
   }
   .sidebar {
     background: url("/ui/denim.png");
     box-shadow: 0 0 20px #000;
-    /* clip-path: inset(-20px 0px -20px -20px); */
     right: calc(100% + 15px);
     top: 30px;
     width: max-content;
@@ -539,7 +555,6 @@
   .right-sidebar {
     background: url("/ui/denim.png");
     box-shadow: 0 0 20px #000;
-    /* clip-path: inset(-20px -20px -20px 0px); */
     left: calc(100% + 15px);
     top: 30px;
     width: max-content;
