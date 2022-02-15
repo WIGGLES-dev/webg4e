@@ -1,20 +1,20 @@
-import { writable, derived } from "svelte/store"
-import { pipe } from "../util.js"
+import { writable, readable, derived } from "svelte/store"
+import { pipe, concat } from "../util.js"
 export const StoreDocumentMixin = (Document) =>
   class extends Document {
-    constructor(...args) {
-      super(...args)
+    constructor(data) {
+      super(...arguments)
+      this.$src = writable()
       this.$data = writable()
       this.$items = writable()
       this.$effects = writable()
-      this.notifyData()
-      this.notifyEmbedded()
+      this.notify()
     }
-    subscribe(...args) {
-      return this.$data.subscribe(...args)
+    prepareData() {
+      super.prepareData(...arguments)
     }
     $getFlag(scope, key) {
-      const flagStore = derived(this.$data, (data) => data.flags[scope]?.[key])
+      const flagStore = derived(this.$src, (data) => data.flags[scope]?.[key])
       return {
         subscribe: (cb) => {
           return flagStore.subscribe(cb)
@@ -28,35 +28,47 @@ export const StoreDocumentMixin = (Document) =>
         },
       }
     }
+    subscribe(...args) {
+      return this.$src.subscribe(...args)
+    }
     set(value) {
-      this.update(value)
+      return this.update(value)
     }
-    notifyData() {
-      this.$data.set(this.data.toObject())
+    async update(data = {}, context = {}) {
+      if (typeof data === "function") {
+        return await super.update(data(this.data), context)
+      } else {
+        return await super.update(...arguments)
+      }
     }
-    notifyEmbedded() {
+    notify(parent = false) {
+      this.$data?.set(this.data.toObject(false))
+      this.$src?.set(this.data.toObject())
       const items = [...(this.items?.values() ?? [])].sort(
         (a, b) => a.data.sort - b.data.sort
       )
       const effects = [...(this.effects?.values() ?? [])]
-      this.$items.set(items)
-      this.$effects.set(effects)
+      for (const document of concat(items, effects)) {
+        document?.notify()
+      }
+      this.$items?.set(items)
+      this.$effects?.set(effects)
+      if (parent) this.parent?.notify()
     }
     _onUpdate(...args) {
       const rv = super._onUpdate(...args)
-      this.notifyData()
-      this.parent?.notifyData()
-      this.parent?.notifyEmbedded()
+      this.notify(true)
       return rv
     }
     _onCreate(...args) {
       const rv = super._onCreate(...args)
-      this.parent?.notifyEmbedded()
+      this.parent?.prepareData()
+      this.parent?.notify(true)
       return rv
     }
     _onDelete(...args) {
       const rv = super._onDelete(...args)
-      this.parent?.notifyEmbedded()
+      this.parent?.notify(true)
       return rv
     }
   }
@@ -142,22 +154,6 @@ export const TreeDocumentMixin = (Document) =>
   }
 export const SystemDocumentMixin = (Document) =>
   class extends pipe(StoreDocumentMixin, TreeDocumentMixin)(Document) {
-    get formControls() {
-      const templates = game.system.template[this.documentName].templates
-      const schema = game.system.template[this.documentName][this.type]
-      const controls = {
-        ...(schema || {}),
-      }
-      if (schema && templates) {
-        if (schema.templates) {
-          for (const template of schema.templates) {
-            Object.assign(schema, templates[template] || {})
-          }
-        }
-        Object.assign(controls, schema)
-      }
-      const expandedControls = {}
-    }
     constructor(...args) {
       super(...args)
     }
@@ -179,6 +175,36 @@ export const SystemDocumentMixin = (Document) =>
       return this.data._source
     }
     get model() {
-      return this.source.data
+      return this.data.data
+    }
+    get change() {
+      return this.changes[this.changes.length - 1]
+    }
+    _onUpdate(change) {
+      this.changes = this.changes || []
+      this.changes.push(change)
+      return super._onUpdate(...arguments)
+    }
+    _initialize() {
+      if (this.parent == null) {
+        super._initialize()
+      }
+    }
+    get proxy() {
+      const path = []
+      const step = (object) => {
+        return new Proxy(object, {
+          get: (target, p, receiver) => {
+            path.push(p)
+            return step(target[p])
+          },
+          set: (target, p, value, receiver) => {
+            this.update({
+              [path.join(".") + `.${p}`]: value,
+            })
+          },
+        })
+      }
+      return step(this.toObject())
     }
   }

@@ -16,3 +16,29 @@ Hooks.on("ready", () => {
 })
 
 Hooks.on("hotbarDrop", (hotbar, data, slot) => {})
+
+class MacroRecorder {
+  constructor(target) {
+    this.target = target
+    this.#init()
+  }
+  #init() {
+    const handlers = {
+      click() {},
+      dblclick() {},
+      input() {},
+      change() {},
+    }
+    for (const [event, fn] of Object.entries(handlers)) {
+    }
+  }
+  attach() {
+    return (node) => {}
+  }
+  finish() {
+    return {
+      type: "script",
+      command: ``,
+    }
+  }
+}

@@ -1,11 +1,7 @@
 {
     "name": "gurps-workspace",
     "workspaces": [
-        "packages/foundry",
-        "packages/sheet",
-        "packages/gurpsjs",
-        "packages/dom-utils",
-        "packages/prop"
+        "packages/foundry"
     ],
     "dependencies": {
         "@popperjs/core": "^2.11.2",
@@ -14,13 +10,11 @@
         "dotenv": "^10.0.0",
         "postcss": "^8.4.5",
         "postcss-preset-env": "^7.1.0",
-        "rxjs": "^7.5.2",
         "snowpack": "^3.0.10",
         "svelte": "^3.46.2",
         "svelte-loader": "^3.1.2",
         "svelte-preprocess": "^4.10.1",
         "tailwindcss": "^3.0.8",
-        "tailwindcss-children": "^2.1.0",
-        "uuid": "^8.3.2"
+        "tailwindcss-children": "^2.1.0"
     }
 }

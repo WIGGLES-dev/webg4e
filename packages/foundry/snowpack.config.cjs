@@ -11,6 +11,7 @@ module.exports = {
   mount: {
     src: "/",
     assets: "/assets",
+    templates: "/templates",
   },
   buildOptions: {
     out: foundrySystemDirectory,

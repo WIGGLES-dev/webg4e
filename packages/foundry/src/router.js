@@ -3,8 +3,8 @@ import { SYSTEM_LINKS } from "./constants.js"
 
 export function sheetRouter(Base, map, options = {}) {
   return class extends Base {
-    constructor(...args) {
-      super(...args)
+    constructor() {
+      super(...arguments)
       this.options.template = map[this.object.type]
     }
     static get defaultOptions() {

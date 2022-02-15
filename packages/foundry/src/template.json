@@ -2,18 +2,19 @@
     "Actor": {
         "types": [
             "character",
-            "party"
+            "party",
+            "template"
         ],
         "templates": {},
         "character": {
             "points": 150,
-            "attributes": "@import ../static/basic.attributes",
             "signatureGear": [],
             "allies": []
         },
         "party": {
             "members": []
-        }
+        },
+        "template": {}
     },
     "Item": {
         "types": [
@@ -21,15 +22,16 @@
             "trait",
             "equipment",
             "attribute",
-            "location",
-            "template"
+            "hit location"
         ],
         "templates": {},
         "skill": {
             "attr": null,
             "isTechnique": false,
-            "points": 0,
-            "difficulty": 0
+            "points": 1,
+            "difficulty": 0,
+            "rsl": 0,
+            "level": 0
         },
         "trait": {
             "roundDown": false,
@@ -52,10 +54,25 @@
             "weight": 0,
             "value": 0
         },
-        "attribute": {},
-        "location": {},
-        "template": {
-            "items": []
+        "attribute": {
+            "id": "",
+            "type": "integer",
+            "name": "",
+            "fullName": "",
+            "formula": "",
+            "costPerPoint": "",
+            "increasedLevel": 0,
+            "thresholds": []
+        },
+        "hit location": {
+            "id": "",
+            "choiceName": "",
+            "tableName": "",
+            "slots": 0,
+            "hitPenalty": 0,
+            "drBonus": 0,
+            "description": "",
+            "rollRange": "-"
         }
     }
 }

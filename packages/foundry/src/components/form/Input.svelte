@@ -1,13 +1,18 @@
 <script>
   import { onMount } from "svelte"
-  let classList
+  let classList = ""
   export { classList as class }
-  export let type
+  export let type = "text"
   export let value
-  export let checked
-  export let store
-  export let readonly
+  export let checked = false
+  export let store = undefined
+  export let readonly = false
+  export let disabled = false
+  export let placeholder = ""
   onMount(() => {
+    if (value == null) {
+      if (type === "text") value = ""
+    }
     const cb = (storeValue) => (value = storeValue)
     return store?.subscribe(cb)
   })
@@ -49,11 +54,13 @@
 </script>
 
 <input
+  {disabled}
   {readonly}
   class={classList}
   type={inferType(value)}
   on:change={change}
   on:input={input}
   {value}
+  {placeholder}
   {checked}
 />

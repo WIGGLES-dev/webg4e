@@ -3,127 +3,113 @@
 		"id": "st",
 		"type": "integer",
 		"name": "ST",
-		"full_name": "Strength",
-		"attribute_base": "10",
-		"cost_per_point": 10,
-		"cost_adj_percent_per_sm": 10
+		"fullName": "Strength",
+		"formula": "10",
+		"costPerPoint": 10
 	},
 	{
 		"id": "dx",
 		"type": "integer",
 		"name": "DX",
-		"full_name": "Dexterity",
-		"attribute_base": "10",
-		"cost_per_point": 20,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "Dexterity",
+		"formula": "10",
+		"costPerPoint": 20
 	},
 	{
 		"id": "iq",
 		"type": "integer",
 		"name": "IQ",
-		"full_name": "Intelligence",
-		"attribute_base": "10",
-		"cost_per_point": 20,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "Intelligence",
+		"formula": "10",
+		"costPerPoint": 20
 	},
 	{
 		"id": "ht",
 		"type": "integer",
 		"name": "HT",
-		"full_name": "Health",
-		"attribute_base": "10",
-		"cost_per_point": 10,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "Health",
+		"formula": "10",
+		"costPerPoint": 10
 	},
 	{
 		"id": "will",
 		"type": "integer",
 		"name": "Will",
-		"full_name": "",
-		"attribute_base": "$iq",
-		"cost_per_point": 5,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "",
+		"formula": "$iq",
+		"costPerPoint": 5
 	},
 	{
 		"id": "fright_check",
 		"type": "integer",
 		"name": "Fright Check",
-		"full_name": "",
-		"attribute_base": "$will",
-		"cost_per_point": 2,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "",
+		"formula": "$will",
+		"costPerPoint": 2
 	},
 	{
 		"id": "per",
 		"type": "integer",
 		"name": "Per",
-		"full_name": "Perception",
-		"attribute_base": "$iq",
-		"cost_per_point": 5,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "Perception",
+		"formula": "$iq",
+		"costPerPoint": 5
 	},
 	{
 		"id": "vision",
 		"type": "integer",
 		"name": "Vision",
-		"full_name": "",
-		"attribute_base": "$per",
-		"cost_per_point": 2,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "",
+		"formula": "$per",
+		"costPerPoint": 2
 	},
 	{
 		"id": "hearing",
 		"type": "integer",
 		"name": "Hearing",
-		"full_name": "",
-		"attribute_base": "$per",
-		"cost_per_point": 2,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "",
+		"formula": "$per",
+		"costPerPoint": 2
 	},
 	{
 		"id": "taste_smell",
 		"type": "integer",
 		"name": "Taste & Smell",
-		"full_name": "",
-		"attribute_base": "$per",
-		"cost_per_point": 2,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "",
+		"formula": "$per",
+		"costPerPoint": 2
 	},
 	{
 		"id": "touch",
 		"type": "integer",
 		"name": "Touch",
-		"full_name": "",
-		"attribute_base": "$per",
-		"cost_per_point": 2,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "",
+		"formula": "$per",
+		"costPerPoint": 2
 	},
 	{
 		"id": "basic_speed",
 		"type": "decimal",
 		"name": "Basic Speed",
-		"full_name": "",
-		"attribute_base": "($dx+$ht)/4",
-		"cost_per_point": 20,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "",
+		"formula": "($dx+$ht)/4",
+		"costPerPoint": 20
 	},
 	{
 		"id": "basic_move",
 		"type": "integer",
 		"name": "Basic Move",
-		"full_name": "",
-		"attribute_base": "floor($basic_speed)",
-		"cost_per_point": 5,
-		"cost_adj_percent_per_sm": 0
+		"fullName": "",
+		"formula": "floor($basic_speed)",
+		"costPerPoint": 5
 	},
 	{
 		"id": "fp",
 		"type": "pool",
 		"name": "FP",
-		"full_name": "Fatigue Points",
-		"attribute_base": "$ht",
-		"cost_per_point": 3,
-		"cost_adj_percent_per_sm": 0,
+		"fullName": "Fatigue Points",
+		"formula": "$ht",
+		"costPerPoint": 3,
 		"thresholds": [
 			{
 				"state": "Unconscious",
@@ -183,10 +169,9 @@
 		"id": "hp",
 		"type": "pool",
 		"name": "HP",
-		"full_name": "Hit Points",
-		"attribute_base": "$st",
-		"cost_per_point": 2,
-		"cost_adj_percent_per_sm": 10,
+		"fullName": "Hit Points",
+		"formula": "$st",
+		"costPerPoint": 2,
 		"thresholds": [
 			{
 				"state": "Dead",

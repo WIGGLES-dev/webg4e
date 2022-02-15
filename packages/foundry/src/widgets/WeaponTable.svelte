@@ -1,6 +1,7 @@
 <script>
   import DataTable from "../components/DataTable.svelte"
   export let document
+  const weapons = document.$getSystemFlag("weapons")
   function addWeapon(e) {
     const weapons = document.getSystemFlag("weapons") || []
     const weapon = {
@@ -17,43 +18,33 @@
       document.setSystemFlag("weapons", weapons)
     }
   }
-  $: weapons = $document.data.weapons || []
-  function menuItems(row) {
-    return []
-  }
 </script>
 
 <DataTable
   menu={{ add: true }}
-  highlight={false}
-  rows={weapons}
+  rows={$weapons || []}
   on:add={addWeapon}
+  let:row={weapon}
+  let:i
 >
   <svelte:fragment slot="header">
-    <th>Name</th>
+    <th>Usage</th>
     <th>Damage</th>
     <th />
   </svelte:fragment>
-  <svelte:fragment let:row={weapon} let:i>
-    <slot {weapon}>
-      {#if weapon}
-        <td>
-          <input
-            bind:value={$document.flags[window.game.system.id].weapons[i].usage}
-          />
-        </td>
-        <td>
-          <input
-            bind:value={$document.flags[window.game.system.id].weapons[i]
-              .damage}
-          />
-        </td>
-        <td on:click={deleteWeapon(i)}>
-          <i class="fas fa-trash" />
-        </td>
-      {/if}
-    </slot>
-  </svelte:fragment>
+  <slot {weapon}>
+    {#if weapon}
+      <td>
+        <input bind:value={$weapons[i].usage} />
+      </td>
+      <td>
+        <input bind:value={$weapons[i].damage} />
+      </td>
+      <td on:click={deleteWeapon(i)}>
+        <i class="fas fa-trash" />
+      </td>
+    {/if}
+  </slot>
 </DataTable>
 
 <style>

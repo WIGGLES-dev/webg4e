@@ -6,6 +6,8 @@
   import { setContext, createEventDispatcher } from "svelte"
   import { writable, derived } from "svelte/store"
   const dispatch = createEventDispatcher()
+  let classList = ""
+  export { classList as class }
   export let key
   export let active = key ? +localStorage.getItem(key) : 0
   const activeStore = writable(typeof active === "number" ? active : 0)
@@ -36,6 +38,6 @@
   })
 </script>
 
-<div>
+<div class={classList}>
   <slot />
 </div>

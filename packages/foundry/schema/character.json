@@ -1,0 +1,19 @@
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "const": "character"
+        },
+        "data": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "./attribute.json"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,7 +1,6 @@
 <script>
   import { filepicker } from "../util.js"
-  import Form from "../components/form/Form.svelte"
-  import Input from "../components/form/Input.svelte"
+  import { Input } from "../components/form/index.js"
   import { Tabs, TabList, TabPanel, Tab } from "../components/tabs/index.js"
   export let document
   export let application
@@ -21,24 +20,22 @@
     <Tab>Effects</Tab>
   </TabList>
   <TabPanel>
-    <Form>
-      <fieldset class="flex">
-        <img on:click={changeImage} width="120px" src={$document.img} alt="" />
+    <fieldset class="flex">
+      <img on:click={changeImage} width="120px" src={$document.img} alt="" />
+      <label>
+        <span>Name</span>
+        <Input bind:value={$document.name} />
+      </label>
+    </fieldset>
+    <hr class="my-3" />
+    <fieldset class="children:m-3 flex flex-col">
+      {#each Object.entries($document.data) as [key, value], i (key)}
         <label>
-          <span>Name</span>
-          <Input bind:value={$document.name} />
+          <span class="mr-1">{key}</span>
+          <!--  -->
         </label>
-      </fieldset>
-      <hr class="my-3" />
-      <fieldset class="children:m-3 flex flex-col">
-        {#each Object.entries($document.data) as [key, value], i (key)}
-          <label>
-            <span class="mr-1">{key}</span>
-            <!--  -->
-          </label>
-        {/each}
-      </fieldset>
-    </Form>
+      {/each}
+    </fieldset>
   </TabPanel>
   <TabPanel>
     {#each Object.entries($document.flags) as [scope, value], i (scope)}
@@ -62,5 +59,5 @@
   </TabPanel>
 </Tabs>
 
-<style lang="postcss">
+<style>
 </style>

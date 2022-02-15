@@ -1,21 +1,25 @@
 <script>
-  import { afterUpdate } from "svelte"
+  import { afterUpdate, onDestroy } from "svelte"
   import { createPopper } from "@popperjs/core"
-  export let placement
+  export let placement = "top"
   export let strategy = "absolute"
-  export let allowedAutoPlacements
+  export let allowedAutoPlacements = undefined
   export let offset = [0, 0]
   export let modifiers = []
-  export let virtual = false
-  let virtualElement
-  let referenceElement
-  let popperElement
+  export let referenceElement = undefined
+  export let popperElement = undefined
   $: {
-    if (virtual) {
-      virtualElement = {
+    if (referenceElement instanceof Event) {
+      const { clientY, clientX } = referenceElement
+      referenceElement = {
         getBoundingClientRect() {
-          if (reference instanceof HTMLElement) {
-            return reference.getBoundingClientRect()
+          return {
+            width: 0,
+            height: 0,
+            top: clientY,
+            right: clientX,
+            bottom: clientY,
+            left: clientX,
           }
         },
       }
@@ -37,16 +41,16 @@
   }
   let instance
   $: {
-    if (!instance && (virtualElement || referenceElement) && popperElement) {
-      instance = createPopper(
-        virtualElement || referenceElement,
-        popperElement,
-        options
-      )
+    if (!instance && referenceElement && popperElement) {
+      instance = createPopper(referenceElement, popperElement, options)
     }
   }
   $: {
-    if (instance && (virtualElement || referenceElement) && popperElement) {
+    if (instance && (referenceElement || popperElement || options)) {
+      instance.state.elements.reference = referenceElement
+      instance.state.elements.popper = popperElement
+      instance.state.options = options
+      instance.update()
     }
   }
   $: referenceState = {
@@ -76,6 +80,7 @@
     referenceElement = node
     return {
       destroy() {
+        referenceElement = null
         for (const [event, fn] of Object.entries(events)) {
           node.removeEventListener(event, fn)
         }
@@ -89,11 +94,15 @@
     return {
       update() {},
       destroy() {
+        popperElement = null
         instance?.destroy()
         instance = null
       },
     }
   }
+  onDestroy(() => {
+    instance?.destroy()
+  })
 </script>
 
 <slot {popper} {reference} {referenceState} {instance} />

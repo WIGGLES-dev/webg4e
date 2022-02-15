@@ -1,8 +1,10 @@
-import { pipe } from "./util.js"
 import { SystemDocumentMixin } from "./mixins/document.js"
-import { Weapons } from "./model/weapon.js"
 
-export class SystemItem extends pipe(SystemDocumentMixin, Weapons)(Item) {}
+export class SystemItem extends SystemDocumentMixin(Item) {
+  prepareBaseData() {
+    super.prepareBaseData(...arguments)
+  }
+}
 
 export class Trait extends SystemItem {
   static cr = {
@@ -41,18 +43,26 @@ export class Skill extends SystemItem {
       points /= 3
     }
     let rsl = difficulty
-    if (points === 1) {
+    if (points <= 0) {
+    } else if (points === 1) {
     } else if (points < 4) {
       rsl++
-    } else {
+    } else if (points >= 4) {
       rsl += 1 + points / 4
     }
+    const base = this.parent.getAttribute(attr)?.level ?? 10
+    const level = Math.floor(base + rsl)
     Object.assign(this.model, {
       rsl,
+      base,
+      level,
     })
   }
 }
 export class Equipment extends SystemItem {
+  prepareBaseData() {
+    super.prepareBaseData(...arguments)
+  }
   prepareDerivedData() {
     super.prepareDerivedData(...arguments)
     const { weight, value, quantity } = this.model
@@ -70,3 +80,7 @@ export class Equipment extends SystemItem {
     })
   }
 }
+
+export class HitLocation extends SystemItem {}
+
+export class Attribute extends SystemItem {}

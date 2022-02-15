@@ -26,6 +26,10 @@ const transforms = {
     map(attribute) {},
     unmap(attribute) {},
   },
+  body: {
+    map(body) {},
+    unmap(body) {},
+  },
 }
 
 function loadCharacter(document) {

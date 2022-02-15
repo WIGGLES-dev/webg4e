@@ -1,14 +1,14 @@
 <script>
-  import { fly } from "svelte/transition"
   import DataTable from "../components/DataTable.svelte"
   import Popper from "../components/Popper.svelte"
   import Rolling from "./Rolling.svelte"
   import Observe from "../components/Observe.svelte"
-  import AttributeEditor from "./AttributeEditor.svelte"
+  import Settings from "./Settings.svelte"
   import SizeSpeedRange from "../widgets/SizeSpeedRange.svelte"
+  import Silhouette from "../widgets/silhouette/Silhouette.svelte"
   import { portal } from "../components/Portal.svelte"
   import { Tabs, TabPanel, TabList, Tab } from "../components/tabs/index"
-  import { Form, Input, Image } from "../components/form/index.js"
+  import { Input, Image } from "../components/form/index.js"
   import { speedRange } from "../formula.js"
   import { pdFoundryInstalled, openPDF } from "../pdfoundry"
   import { capitalize } from "../util.js"
@@ -17,7 +17,8 @@
   export let application
   export let document
   const items = document.$items
-  let character = document
+  const character = document
+  const data = document.$data
   let speedRangeTool = 0
   const openApps = new Set()
   function openApp({ component, props = {}, title = "", options }) {
@@ -95,22 +96,21 @@
       ])
     }
   }
-  function sortEmbedded() {
-    return async function ({
-      detail: { dragging, target, siblings, sortBefore },
-    }) {
-      const sort = SortingHelpers.performIntegerSort(dragging, {
-        target,
-        siblings,
-        sortBefore,
-      })
-      const updates = sort.map((u) => ({
-        _id: u.target.data._id,
-        ...u.update,
-      }))
-      await document.updateEmbeddedDocuments("Item", updates)
-    }
+  async function sortTable({
+    detail: { dragging, target, siblings, sortBefore },
+  }) {
+    const sort = SortingHelpers.performIntegerSort(dragging, {
+      target,
+      siblings,
+      sortBefore,
+    })
+    const updates = sort.map((u) => ({
+      _id: u.target.data._id,
+      ...u.update,
+    }))
+    await document.updateEmbeddedDocuments("Item", updates)
   }
+  async function sortHeader() {}
   $: rows = (type) =>
     $items
       .filter((item) => item.type === type)
@@ -164,74 +164,84 @@
   }
 </script>
 
-<Form>
-  <menu class="sidebar">
-    <button type="button" class="action" on:click={log}>Log To Console</button>
-    <button
-      type="button"
-      on:click={() =>
-        openApp({
-          component: SizeSpeedRange,
-          props: {},
-          title: "Size Speed & Range Tool",
-        })}
-      class="action"
-    >
-      Size/Speed
-    </button>
-    <button
-      type="button"
-      on:click={() => {
-        openApp({
-          component: Rolling,
-          props: {},
-          title: "Rolling Tool",
-        })
-      }}
-      class="action"
-    >
-      Rolling
-    </button>
-  </menu>
-  <menu class="toolbar">
-    <div class="flex flex-col w-min">
-      <label>
-        <output>{speedRange(speedRangeTool)}</output>
-        <span>Distance Penalty</span>
-      </label>
-      <input
-        min="0"
-        placeholder="distance"
-        type="number"
-        bind:value={speedRangeTool}
-      />
-    </div>
-  </menu>
-  <div class="attributes">
-    <div class="m-3">
-      <menu class="mb-3">
-        <i
-          on:click={() =>
-            openApp({
-              component: AttributeEditor,
-              props: {
-                document,
-                application,
-              },
-              title: "Attribute Editor",
-            })}
-          class="fas fa-cogs hover:outline p-1"
-        />
-        <i class="fas fa-gavel hover:outline p-1" />
-      </menu>
-      <ul style:max-height="700px">
-        {#each $character.data.attributes as attr, i (attr.id)}
-          <li transition:fly={{ x: 100, duration: 250 }} class="mb-1">
+<menu class="sidebar">
+  <button type="button" class="contrast" on:click={log}>Log To Console</button>
+  <button
+    type="button"
+    on:click={() =>
+      openApp({
+        component: SizeSpeedRange,
+        props: {},
+        title: "Size Speed & Range Tool",
+      })}
+    class="contrast"
+  >
+    Size/Speed
+  </button>
+  <button
+    type="button"
+    on:click={() => {
+      openApp({
+        component: Rolling,
+        props: {},
+        title: "Rolling Tool",
+      })
+    }}
+    class="contrast"
+  >
+    Rolling
+  </button>
+  <button
+    type="button"
+    on:click={() =>
+      openApp({
+        component: Settings,
+        props: {
+          document,
+          application,
+        },
+        title: "Attribute Editor",
+      })}
+    class="contrast"
+  >
+    <i class="fas fa-cogs" />
+  </button>
+</menu>
+<menu class="toolbar">
+  <div class="flex flex-col w-min">
+    <label>
+      <output>{speedRange(speedRangeTool)}</output>
+      <span>Distance Penalty</span>
+    </label>
+    <input
+      min="0"
+      placeholder="distance"
+      type="number"
+      bind:value={speedRangeTool}
+    />
+  </div>
+</menu>
+<section class="right-sidebar">
+  <Tabs key="right-sidebar {document.id}">
+    <TabList>
+      <Tab>Attributes</Tab>
+      <Tab>Body</Tab>
+      <Tab>Silhouette</Tab>
+    </TabList>
+    <TabPanel>
+      <ul>
+        {#each Object.entries($data.data.attributes) as [id, attr], i (id)}
+          <li class="mb-1">
             <div class="flex">
               <input
                 on:change={(e) => {
-                  attr.increasedLevel =
-                    attr.increasedLevel + (+e.target.value - attr.level)
+                  const increase = +e.target.value - attr.level
+                  const data = attr.item.toObject()
+                  const increasedLevel =
+                    (data.data.increasedLevel || 0) + increase
+                  attr.item.update({
+                    data: { increasedLevel },
+                  })
                 }}
                 step={attr.type === "decimal" ? "0.25" : "1"}
                 class="w-12 mr-1"
@@ -242,16 +252,16 @@
                 {attr.full_name || attr.name}
               </span>
               <Popper
-                portal={(node) => node.getRootNode()}
                 placement="right-start"
-                offset={[0, 40]}
+                offset={[0, 25]}
                 let:reference
                 let:popper
                 let:referenceState
               >
                 <i
                   use:reference
-                  class="fas fa-info-circle self-center ml-3 justify-self-end hover:text-green-500"
+                  style:font-size="10px"
+                  class="fas fa-info self-center ml-3 justify-self-end contrast"
                 />
                 {#key i}
                   <div use:popper use:portal={(node) => node.getRootNode()}>
@@ -259,7 +269,6 @@
                       <ul class="denim sheet-shadow p-3">
                         <li>points spent: {attr.pointsSpent}</li>
                         <li>levels increased: {attr.increasedLevel}</li>
-                        <li>feature bonus: {attr.featureBonus}</li>
                       </ul>
                     {/if}
                   </div>
@@ -273,7 +282,7 @@
                   max={attr.level}
                   step="1"
                   type="range"
-                  bind:value={attr.current}
+                  bind:value={$character.data.attributes[i].current}
                 />
                 <span class=" flex-1 text-xs self-center text-center">
                   {attr.current}
@@ -283,171 +292,235 @@
           </li>
         {/each}
       </ul>
-    </div>
-  </div>
-  <div class="m-3 p-3">
-    <section class="sheet-section">
-      <div class="flex gap-3">
-        <div>
-          <Input class="w-full" bind:value={$character.name} />
-          <Image bind:src={$character.img} width="175px" />
-        </div>
-        <div class="col">
-          <label>
-            <span>Carried Weight</span>
-            <output>{$character.data.carriedWeight}</output>
-          </label>
-          <label>
-            <span>Encumbrance</span>
-            <output>{$character.data.encumbranceLevel}</output>
-          </label>
-          <label>
-            <span>Swing</span>
-            <output class="rollable">{$character.data.swing}</output>
-          </label>
-          <label>
-            <span>Thrust</span>
-            <output class="rollable">{$character.data.thrust}</output>
-          </label>
-        </div>
-        <div class="col">
-          <label>
-            <span class="whitespace-nowrap">Basic Lift</span>
-            <output>{$character.data.basicLift}</output>
-          </label>
-        </div>
-        <div class="col">
-          <label>
-            <span>Point Total</span>
-            <Input type="number" bind:value={$character.data.points} />
-          </label>
-        </div>
+    </TabPanel>
+    <TabPanel>
+      <div class="m-2">
+        <table class="m-auto">
+          <caption>Hit Location Table</caption>
+          <tr>
+            <th>Roll</th>
+            <th>Location</th>
+            <th>DR</th>
+          </tr>
+          {#each [] as part}
+            <tr>
+              <td>{part.calc.rollRange}</td>
+              <td>{part.tableName}</td>
+              <td>{part.drBonus || 0}</td>
+            </tr>
+          {/each}
+        </table>
       </div>
-    </section>
-  </div>
-  <Tabs key={document.id}>
-    <TabList>
-      <Tab>Skills</Tab>
-      <Tab>Equipment</Tab>
-      <Tab>Traits</Tab>
-      <Tab>Weapons</Tab>
-    </TabList>
-    <TabPanel>
-      <DataTable
-        menu={{ add: true }}
-        ctxmenu={menuItems}
-        setData={setItemData("skill")}
-        key="character skill table"
-        rows={rows("skill")}
-        draggable
-        sortable
-        {document}
-        on:add={addEmbedded("skill")}
-        on:sort={sortEmbedded()}
-      >
-        <svelte:fragment slot="header">
-          <th class="w-full">name</th>
-          <th>points</th>
-          <th>level</th>
-          <th>ref</th>
-        </svelte:fragment>
-        <svelte:fragment let:row={skill}>
-          <Observe let:value={src} store={skill}>
-            <td>{src.name}</td>
-            <td>{src.data.points}</td>
-            <td class="rollable">{src.data.level}</td>
-            <td>{src.flags[game.system.id]?.pdfreference ?? ""}</td>
-          </Observe>
-        </svelte:fragment>
-      </DataTable>
     </TabPanel>
     <TabPanel>
-      <DataTable
-        menu={{ add: true }}
-        ctxmenu={menuItems}
-        setData={setItemData("equipment")}
-        key="character equipment table"
-        rows={rows("equipment")}
-        draggable
-        sortable
-        {document}
-        on:add={addEmbedded("equipment")}
-        on:sort={sortEmbedded()}
+      <Silhouette
+        locations={[]}
+        viewBox={[200, 0, 400, 800]}
+        height="500px"
+        width="200px"
       >
-        <svelte:fragment slot="header">
-          <th>name</th>
-          <th>quantity</th>
-          <th>weight</th>
-          <th>eWeight</th>
-          <th>value</th>
-          <th>eValue</th>
-          <th>ref</th>
-        </svelte:fragment>
-        <svelte:fragment let:row={item}>
-          <Observe let:value={src} store={item}>
-            <td>{src.name}</td>
-            <td>{src.data.quantity}</td>
-            <td>{src.data.weight}</td>
-            <td>{src.data.containedWeight}</td>
-            <td>{src.data.value}</td>
-            <td>{src.data.containedValue}</td>
-            <td>{src.flags[game.system.id]?.pdfreference ?? ""}</td>
-          </Observe>
-        </svelte:fragment>
-      </DataTable>
-    </TabPanel>
-    <TabPanel>
-      <DataTable
-        menu={{ add: true }}
-        ctxmenu={menuItems}
-        setData={setItemData("trait")}
-        key="character trait table"
-        rows={rows("trait")}
-        draggable
-        sortable
-        {document}
-        on:add={addEmbedded("trait")}
-        on:sort={sortEmbedded()}
-      >
-        <svelte:fragment slot="header">
-          <th>name</th>
-          <th>cost</th>
-          <th>ref</th>
-        </svelte:fragment>
-        <svelte:fragment let:row={item}>
-          <Observe let:value={src} store={item}>
-            <td>{src.name}</td>
-            <td>0</td>
-            <td>{src.flags[game.system.id]?.pdfreference ?? ""}</td>
-          </Observe>
-        </svelte:fragment>
-      </DataTable>
-    </TabPanel>
-    <TabPanel>
-      <DataTable
-        key="character weapons table"
-        setData={setWeaponData}
-        rows={$character.data.allWeapons}
-        {document}
-      >
-        <svelte:fragment slot="header">
-          <th>Name</th>
-          <th>Usage</th>
-          <th>Damage</th>
-        </svelte:fragment>
-        <svelte:fragment let:row={weapon}>
-          <td>{weapon.name}</td>
-          <td>{weapon.usage}</td>
-          <td class="rollable">
-            {weapon.damage}
-          </td>
-        </svelte:fragment>
-      </DataTable>
+        <div
+          style:width="250px"
+          class="bg-black p-3 rounded opacity-75"
+          slot="tooltip"
+          let:location
+        >
+          <p>id: {location.id}</p>
+          <p>name: {location.tableName}</p>
+          <p>slots: {location.slots}</p>
+          <p>hit penalty: {location.hitPenalty}</p>
+          <p>dr: {location.drBonus}</p>
+          <p>description: {location.description}</p>
+        </div>
+      </Silhouette>
     </TabPanel>
   </Tabs>
-</Form>
+</section>
 
-<style lang="postcss">
+<div class="m-3 p-3">
+  <section class="sheet-section">
+    <div class="flex gap-3">
+      <div>
+        <Input class="w-full" bind:value={$character.name} />
+        <Image bind:src={$character.img} width="175px" />
+      </div>
+      <div class="col">
+        <label>
+          <span>Carried Weight</span>
+          <output>{$data.data.carriedWeight}</output>
+        </label>
+        <label>
+          <span>Encumbrance</span>
+          <output>{$data.data.encumbranceLevel}</output>
+        </label>
+        <label>
+          <span>Swing</span>
+          <output
+            class="rollable"
+            data-formula={$data.data.swing}
+            data-uuid={character.uuid}
+          >
+            {$data.data.swing}
+          </output>
+        </label>
+        <label>
+          <span>Thrust</span>
+          <output
+            class="rollable"
+            data-formula={$data.data.thrust}
+            data-uuid={character.uuid}
+          >
+            {$data.data.thrust}
+          </output>
+        </label>
+      </div>
+      <div class="col">
+        <label>
+          <span class="whitespace-nowrap">Basic Lift</span>
+          <output>{$data.data.basicLift}</output>
+        </label>
+      </div>
+      <div class="col">
+        <label>
+          <span>
+            Point Total
+            <br />
+            [{$data.data.unspentPoints} unspent]
+          </span>
+          <Input type="number" bind:value={$character.data.points} />
+        </label>
+      </div>
+    </div>
+  </section>
+</div>
+<Tabs key={document.id}>
+  <TabList>
+    <Tab>Skills</Tab>
+    <Tab>Equipment</Tab>
+    <Tab>Traits</Tab>
+    <Tab>Weapons</Tab>
+  </TabList>
+  <TabPanel>
+    <DataTable
+      menu={{ add: true }}
+      ctxmenu={menuItems}
+      setData={setItemData("skill")}
+      key="character skill table"
+      rows={rows("skill")}
+      draggable
+      sortable
+      on:add={addEmbedded("skill")}
+      on:sort={sortTable}
+      on:order={sortHeader}
+      let:row={skill}
+    >
+      <svelte:fragment slot="header">
+        <th data-sort="name" class="w-full">name</th>
+        <th data-sort="data.points">points</th>
+        <th data-sort="data.level">level</th>
+        <th data-sort="flags.{game.system.id}.pdfreference">ref</th>
+      </svelte:fragment>
+      <Observe let:value={src} store={skill.$data}>
+        <td>{src.name}</td>
+        <td>{src.data.points}</td>
+        <td
+          class="rollable"
+          data-formula="3d6ms{src.data.level}"
+          data-uuid={character.uuid}
+        >
+          {src.data.level}
+        </td>
+        <td>{src.flags[game.system.id]?.pdfreference ?? ""}</td>
+      </Observe>
+    </DataTable>
+  </TabPanel>
+  <TabPanel>
+    <DataTable
+      menu={{ add: true }}
+      ctxmenu={menuItems}
+      setData={setItemData("equipment")}
+      key="character equipment table"
+      rows={rows("equipment")}
+      draggable
+      sortable
+      on:add={addEmbedded("equipment")}
+      on:sort={sortTable}
+      on:order={sortHeader}
+      let:row={equipment}
+      let:i
+    >
+      <svelte:fragment slot="header">
+        <th data-sort="name">name</th>
+        <th data-sort="data.quantity">quantity</th>
+        <th data-sort="data.weight">weight</th>
+        <th data-sort="data.eWeight">eWeight</th>
+        <th data-sort="data.value">value</th>
+        <th data-sort="data.eValue">eValue</th>
+        <th data-sort="flags.{game.system.id}.pdfreference">ref</th>
+      </svelte:fragment>
+      <Observe let:value={src} store={equipment.$data}>
+        <td>{src.name}</td>
+        <td>{src.data.quantity}</td>
+        <td>{src.data.weight}</td>
+        <td>{src.data.containedWeight}</td>
+        <td>{src.data.value}</td>
+        <td>{src.data.containedValue}</td>
+        <td>{src.flags[game.system.id]?.pdfreference ?? ""}</td>
+      </Observe>
+    </DataTable>
+  </TabPanel>
+  <TabPanel>
+    <DataTable
+      menu={{ add: true }}
+      ctxmenu={menuItems}
+      setData={setItemData("trait")}
+      key="character trait table"
+      rows={rows("trait")}
+      draggable
+      sortable
+      on:add={addEmbedded("trait")}
+      on:sort={sortTable}
+      on:order={sortHeader}
+      let:row={trait}
+    >
+      <svelte:fragment slot="header">
+        <th data-sort="name">name</th>
+        <th data-sort="data.points">cost</th>
+        <th data-sort="flags.{game.system.id}.pdfreference">ref</th>
+      </svelte:fragment>
+      <Observe let:value={src} store={trait.$data}>
+        <td>{src.name}</td>
+        <td>{src.data.points}</td>
+        <td>{src.flags[game.system.id]?.pdfreference ?? ""}</td>
+      </Observe>
+    </DataTable>
+  </TabPanel>
+  <TabPanel>
+    <DataTable
+      key="character weapons table"
+      setData={setWeaponData}
+      rows={$data.data.allWeapons}
+      let:row={weapon}
+    >
+      <svelte:fragment slot="header">
+        <th>Name</th>
+        <th>Usage</th>
+        <th>Damage</th>
+      </svelte:fragment>
+      <td>{weapon.ownerName}</td>
+      <td>{weapon.usage}</td>
+      <td
+        class="rollable"
+        data-formula={weapon.damage}
+        data-uuid={character.uuid}
+      >
+        {weapon.damage}
+      </td>
+    </DataTable>
+  </TabPanel>
+</Tabs>
+
+<style>
   .sheet-shadow {
     box-shadow: 0 0 20px #000;
   }
@@ -457,26 +530,24 @@
   .sidebar {
     background: url("/ui/denim.png");
     box-shadow: 0 0 20px #000;
-    clip-path: inset(-20px 0px -20px -20px);
-    right: calc(100% - 2px);
+    /* clip-path: inset(-20px 0px -20px -20px); */
+    right: calc(100% + 15px);
     top: 30px;
-    @apply absolute w-max flex flex-col;
+    width: max-content;
+    @apply absolute flex flex-col;
   }
-  .attributes {
+  .right-sidebar {
     background: url("/ui/denim.png");
     box-shadow: 0 0 20px #000;
-    clip-path: inset(-20px -20px -20px 0px);
-    left: calc(100% - 2px);
+    /* clip-path: inset(-20px -20px -20px 0px); */
+    left: calc(100% + 15px);
     top: 30px;
-    @apply absolute w-max overflow-y-scroll;
-  }
-  .sidebar .action {
-    @apply p-3 hover:outline;
+    width: max-content;
+    @apply absolute overflow-y-auto;
   }
   .toolbar {
     background: url("/ui/denim.png");
     box-shadow: 0 0 20px #000;
-    //clip-path: inset(0px -20px -20px -20px);
     right: 0px;
     top: calc(100% + 15px);
     @apply absolute w-full;

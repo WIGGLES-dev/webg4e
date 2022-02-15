@@ -26,8 +26,8 @@
   import { createEventDispatcher, tick } from "svelte"
   import { createPopper } from "@popperjs/core"
   const dispatch = createEventDispatcher()
-  export let event
-  export let options
+  export let event = undefined
+  export let options = []
   let open = false
   export async function render({ options: _options, event: _event }) {
     if (open) {

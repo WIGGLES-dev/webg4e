@@ -4,7 +4,7 @@
 
 <script>
   import { setContext } from "svelte"
-  let classList
+  let classList = ""
   export { classList as class }
   setContext(FormContext, {
     registerControl() {},
@@ -20,11 +20,5 @@
   <slot />
 </form>
 
-<style lang="postcss">
-  form :global(.col) {
-    @apply grid gap-2 grid-cols-2 h-min m-3;
-  }
-  form :global(.col > *) {
-    @apply contents;
-  }
+<style>
 </style>

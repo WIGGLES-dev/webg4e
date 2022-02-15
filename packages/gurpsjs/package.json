@@ -1,8 +1,0 @@
-{
-  "name": "gurpsjs",
-  "version": "0.1.0",
-  "description": "gurps specific models and logic",
-  "main": "lib/index.ts",
-  "scripts": {},
-  "dependencies": {}
-}
