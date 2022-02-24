@@ -1,9 +1,9 @@
 <script context="module">
   import ContextMenu from "./ContextMenu.svelte"
-  import { get_root_for_style } from "svelte/internal"
   let menus = new Map()
   function getMenu(node) {
-    const target = get_root_for_style(node)
+    const root = node.getRootNode()
+    const target = root === document ? root.body : root
     if (menus.has(target)) return menus.get(target)
     const menu = new ContextMenu({
       target,
@@ -79,30 +79,36 @@
 <svelte:window on:click={close} />
 
 {#if open}
-  <ul use:poppify class="bg-white text-black absolute" style:z-index="1000">
-    {#each options as option, i}
-      {#if option instanceof Array}
-        <!--  -->
-      {:else}
-        <li
-          class:disabled={option.can === false}
-          class:warn={option.warn}
-          class="p-3 hover:bg-green-500 hover:text-white {option.class || ''}"
-          on:click|capture|stopPropagation={() => {
-            if (option.can !== false) {
-              option.click()
-              close()
-            }
-          }}
-        >
-          <slot {option}>{option.label}</slot>
-        </li>
-      {/if}
-    {/each}
-  </ul>
+  <div class="tailwind">
+    <ul use:poppify class="context-menu absolute" style:z-index="1000">
+      {#each options as option, i}
+        {#if option instanceof Array}
+          <!--  -->
+        {:else if "show" in option ? option.show === true : true}
+          <li
+            class:disabled={option.can === false}
+            class:warn={option.warn}
+            class="p-3 hover:bg-green-500 hover:text-white {option.class || ''}"
+            on:click|capture|stopPropagation={() => {
+              if (option.can !== false) {
+                option.click()
+                close()
+              }
+            }}
+          >
+            <slot {option}>{option.label}</slot>
+          </li>
+        {/if}
+      {/each}
+    </ul>
+  </div>
 {/if}
 
 <style>
+  .context-menu {
+    @apply list-none;
+    background-color: rgb(35, 34, 29);
+  }
   .disabled {
     @apply bg-gray-400 text-white;
   }

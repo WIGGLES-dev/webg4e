@@ -282,8 +282,15 @@ export class Character extends SystemActor {
   prepareBody() {
     const scope = {}
     const { "hit location": hitLocations = [] } = this.itemTypes
-    for (const part of hitLocations) {
+    for (const item of hitLocations) {
+      const part = item.model
       scope[part.id] = part
+    }
+    for (const item of hitLocations) {
+      const part = item.model
+      Object.assign(part, {
+        item,
+      })
     }
     Object.assign(this.model, { body: scope })
   }
@@ -320,6 +327,7 @@ export class Character extends SystemActor {
     let pointsSpentTraits = 0
     let pointsSpentPerks = 0
     let pointsSpentQuirks = 0
+    let pointsSpentAttributes = 0
     let carriedWeight = 0
     for (const skill of skills) {
       const { points, isTechnique, attr, rsl } = skill.model
@@ -337,6 +345,10 @@ export class Character extends SystemActor {
     }
     for (const trait of traits) {
       const { points } = trait.model
+      pointsSpentTraits += points
+    }
+    for (const [id, attr] of Object.entries(attributes)) {
+      pointsSpentAttributes += attr.pointsSpent
     }
     const strength = this.getAttribute("st")
     const st = strength?.level ?? 10
@@ -360,16 +372,16 @@ export class Character extends SystemActor {
       pointsSpentTechniques +
       pointsSpentTraits +
       pointsSpentPerks +
-      pointsSpentQuirks
-    for (const [id, attr] of Object.entries(attributes)) {
-      pointsSpent += attr.pointsSpent
-    }
+      pointsSpentQuirks +
+      pointsSpentAttributes
+
     const pointSummary = {
       skills: pointsSpentSkills,
       techniques: pointsSpentTechniques,
       traits: pointsSpentTraits,
       perks: pointsSpentPerks,
       quirks: pointsSpentQuirks,
+      attributes: pointsSpentAttributes,
     }
     const unspentPoints = points - pointsSpent
     const progression = DamageProgression.BasicSet

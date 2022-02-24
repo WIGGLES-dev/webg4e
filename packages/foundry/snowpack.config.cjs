@@ -12,6 +12,7 @@ module.exports = {
     src: "/",
     assets: "/assets",
     templates: "/templates",
+    static: "/static",
   },
   buildOptions: {
     out: foundrySystemDirectory,

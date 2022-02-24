@@ -14,8 +14,7 @@ Object.defineProperties(KeyboardManager.prototype, {
   hasFocus: {
     get() {
       return (
-        $(":focus").length > 0 ||
-        (!!document.activeElement && document.activeElement !== document.body)
+        !!document.activeElement && document.activeElement !== document.body
       )
     },
   },

@@ -5,9 +5,12 @@
   export let depth = 0
   export let children = (v) => v?.children ?? []
   export let key = (v, i) => v?.id ?? i
+  export let rootOnly = false
 </script>
 
-{#if value instanceof Array}
+{#if rootOnly}
+  <slot {value} {depth} />
+{:else if value instanceof Array}
   {#each value as root, i (key(root, i))}
     <svelte:self index={index + 1} value={root} {children} let:value let:depth>
       <slot {value} {depth} i={index + i} />
@@ -15,7 +18,7 @@
   {/each}
 {:else}
   <slot {value} {depth} i={index} />
-  {#each children(value) as child, i (key(root, i))}
+  {#each children(value) as child, i (key(child, i))}
     <svelte:self
       index={index + 1}
       depth={depth + 1}

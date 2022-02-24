@@ -40,6 +40,7 @@
           }. Allowed types: string (CSS selector) or HTMLElement.`
         )
       }
+      if (targetEl == null || targetEl === document) targetEl = document.body
       const oldRoot = get_root_for_style(el)
       const newRoot = get_root_for_style(targetEl)
       const sameRoot = oldRoot.isSameNode(newRoot)

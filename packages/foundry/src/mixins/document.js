@@ -55,19 +55,19 @@ export const StoreDocumentMixin = (Document) =>
       this.$effects?.set(effects)
       if (parent) this.parent?.notify()
     }
-    _onUpdate(...args) {
-      const rv = super._onUpdate(...args)
+    _onUpdate() {
+      const rv = super._onUpdate(...arguments)
       this.notify(true)
       return rv
     }
-    _onCreate(...args) {
-      const rv = super._onCreate(...args)
+    _onCreate() {
+      const rv = super._onCreate(...arguments)
       this.parent?.prepareData()
       this.parent?.notify(true)
       return rv
     }
-    _onDelete(...args) {
-      const rv = super._onDelete(...args)
+    _onDelete() {
+      const rv = super._onDelete(...arguments)
       this.parent?.notify(true)
       return rv
     }
@@ -90,7 +90,11 @@ export const TreeDocumentMixin = (Document) =>
         const children = this.getFlag(game.system.id, "children")
         if (children) {
           for (const id of children) {
-            yield this.parent.getEmbeddedDocument("Item", id)
+            const item = this.parent.getEmbeddedDocument("Item", id)
+            if (item == null) {
+              continue
+            }
+            yield item
           }
         }
       }
@@ -99,7 +103,8 @@ export const TreeDocumentMixin = (Document) =>
       if (this.parent) {
         const parent = this.getFlag(game.system.id, "parent")
         if (parent) {
-          return this.parent.getEmbeddedDocument("Item", parent)
+          const item = this.parent.getEmbeddedDocument("Item", parent)
+          return item
         }
       }
     }
@@ -122,40 +127,65 @@ export const TreeDocumentMixin = (Document) =>
      * @param {Item} parent
      */
     async addEmbeddedChild(child) {
-      if (this.parent == null)
-        throw new Error("Cannot create a relationship on a top level document")
-      if (child.parent.id !== this.parent.id)
-        throw new Error(
-          "Attempted to create a relationship between to documents that are not embedded in the same parent"
+      if (child instanceof foundry.abstract.Document) {
+        if (this.parent == null)
+          throw new Error(
+            "Cannot create a relationship on a top level document"
+          )
+        if (child.parent.id !== this.parent.id)
+          throw new Error(
+            "Attempted to create a relationship between to documents that are not embedded in the same parent"
+          )
+        const currentParent = child.getEmbeddedParent()
+        if (currentParent?.id === this.id)
+          throw new Error(
+            "Attempted to create a link a child to the same existing parent"
+          )
+        if (currentParent) {
+          const filteredChildren =
+            currentParent
+              .getFlag(game.system.id, "children")
+              ?.filter((id) => id !== child.id) ?? null
+          await currentParent.setFlag(
+            game.system.id,
+            "children",
+            filteredChildren
+          )
+        }
+        const newChildren = [
+          ...(this.getFlag(game.system.id, "children") || []),
+          child.id,
+        ]
+        await this.setFlag(game.system.id, "children", newChildren)
+        await child.setFlag(game.system.id, "parent", this.id)
+      } else {
+        const [createdChild] = await this.parent.createEmbeddedDocuments(
+          "Item",
+          [
+            {
+              ...child,
+              flags: {
+                [game.system.id]: {
+                  parent: this.id,
+                },
+              },
+            },
+          ]
         )
-      const currentParent = child.getEmbeddedParent()
-      if (currentParent?.id === this.id)
-        throw new Error(
-          "Attempted to create a link a child to the same existing parent"
-        )
-      if (currentParent) {
-        const filteredChildren =
-          currentParent
-            .getFlag(game.system.id, "children")
-            ?.filter((id) => id !== child.id) ?? null
-        await currentParent.setFlag(
-          game.system.id,
-          "children",
-          filteredChildren
-        )
+        const newChildren = [
+          ...(this.getFlag(game.system.id, "children") || []),
+          createdChild.id,
+        ]
+        await this.setFlag(game.system.id, "children", newChildren)
       }
-      const newChildren = [
-        ...(this.getFlag(game.system.id, "children") || []),
-        child.id,
-      ]
-      await this.setFlag(game.system.id, "children", newChildren)
-      await child.setFlag(game.system.id, "parent", this.id)
     }
   }
 export const SystemDocumentMixin = (Document) =>
   class extends pipe(StoreDocumentMixin, TreeDocumentMixin)(Document) {
     constructor(...args) {
       super(...args)
+      this.changes = []
+      this.ptr = 0
     }
     *iterEmbeddedEffects() {
       for (const item of this.items.values()) {
@@ -180,10 +210,40 @@ export const SystemDocumentMixin = (Document) =>
     get change() {
       return this.changes[this.changes.length - 1]
     }
+    undo(count = 1) {}
+    redo(count = 1) {}
     _onUpdate(change) {
       this.changes = this.changes || []
       this.changes.push(change)
+      this.ptr++
       return super._onUpdate(...arguments)
+    }
+    _onDelete() {
+      const rv = super._onDelete(...arguments)
+      if (this.parent) {
+        const update = []
+        const remove = []
+        const parent = this.getEmbeddedParent()
+        if (parent) {
+          update.push({
+            _id: parent.id,
+            flags: {
+              [game.system.id]: {
+                children: parent.data.flags[game.system.id].children.filter(
+                  (id) => id !== this.id
+                ),
+              },
+            },
+          })
+        }
+        for (const descendant of this.iterEmbeddedDescendants()) {
+          remove.push(descendant.id)
+        }
+        this.parent
+          .deleteEmbeddedDocuments("Item", remove)
+          .then(() => this.parent.updateEmbeddedDocuments("Item", update))
+      }
+      return rv
     }
     _initialize() {
       if (this.parent == null) {

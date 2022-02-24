@@ -1,6 +1,5 @@
 export { default as Form } from "./Form.svelte"
 export { default as Input } from "./Input.svelte"
 export { default as Select } from "./Select.svelte"
-export { default as Image } from "./Image.svelte"
 export { default as Label } from "./Label.svelte"
 export { default as Filter } from "./Filter.svelte"

@@ -102,7 +102,7 @@ export const schema = {
     },
     trait: {
       basePointCost: Schema.number(),
-      level: Schema.number(),
+      levels: Schema.number(),
     },
     equipment: {
       quantity: Schema.number(),

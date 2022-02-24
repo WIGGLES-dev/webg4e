@@ -2,13 +2,15 @@
   import { onMount } from "svelte"
   let classList = ""
   export { classList as class }
+  export let name = null
   export let type = "text"
-  export let value
+  export let value = null
   export let checked = false
   export let store = undefined
   export let readonly = false
   export let disabled = false
   export let placeholder = ""
+  export let data = {}
   onMount(() => {
     if (value == null) {
       if (type === "text") value = ""

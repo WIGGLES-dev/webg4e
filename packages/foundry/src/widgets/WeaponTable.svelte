@@ -1,50 +1,27 @@
 <script>
-  import DataTable from "../components/DataTable.svelte"
+  import DataTable from "./DataTable.svelte"
   export let document
-  const weapons = document.$getSystemFlag("weapons")
-  function addWeapon(e) {
-    const weapons = document.getSystemFlag("weapons") || []
-    const weapon = {
+  function create() {
+    return {
       usage: "",
       damage: "1d6",
     }
-    document.setSystemFlag("weapons", [...weapons, weapon])
   }
-  function deleteWeapon(index) {
-    return function (e) {
-      const weapons = document
-        .getSystemFlag("weapons")
-        .filter((v, i) => i !== index)
-      document.setSystemFlag("weapons", weapons)
-    }
-  }
+  const path = `flags.${game.system.id}.weapons`
+  const menu = { add: true, delete: true }
 </script>
 
-<DataTable
-  menu={{ add: true }}
-  rows={$weapons || []}
-  on:add={addWeapon}
-  let:row={weapon}
-  let:i
->
+<DataTable {create} {document} {menu} {path} let:row={weapon} let:set let:i>
   <svelte:fragment slot="header">
     <th>Usage</th>
     <th>Damage</th>
-    <th />
   </svelte:fragment>
-  <slot {weapon}>
-    {#if weapon}
-      <td>
-        <input bind:value={$weapons[i].usage} />
-      </td>
-      <td>
-        <input bind:value={$weapons[i].damage} />
-      </td>
-      <td on:click={deleteWeapon(i)}>
-        <i class="fas fa-trash" />
-      </td>
-    {/if}
-  </slot>
+  <td>
+    <input type="text" value={weapon.usage} on:change={set("usage")} />
+  </td>
+  <td>
+    <input type="text" value={weapon.damage} on:change={set("damage")} />
+  </td>
 </DataTable>
 
 <style>

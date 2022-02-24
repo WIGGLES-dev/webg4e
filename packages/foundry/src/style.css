@@ -1,3 +1,64 @@
+@tailwind utilities;
+@tailwind components;
+
 .svelte > .window-content {
+  @apply text-white;
   background: url("/ui/denim.png");
+}
+
+.tailwind {
+  & * {
+    @apply text-white;
+  }
+  & select option {
+    @apply text-black;
+  }
+  & menu {
+    @apply p-0;
+  }
+  & ul {
+    @apply list-none p-0;
+  }
+}
+
+.tailwind input[type="text"],
+.tailwind input[type="number"],
+.tailwind select,
+.tailwind textarea {
+  @apply bg-white opacity-75 text-black p-1 h-min outline-none;
+}
+
+.warn {
+  @apply hover:bg-red-500 p-2;
+}
+
+.contrast {
+  @apply p-2;
+}
+
+.contrast:hover {
+  @apply bg-white opacity-75 text-black;
+}
+
+.rollable {
+  cursor: url("assets/threed6rot.webp"), auto;
+}
+
+.col {
+  @apply grid gap-2 grid-cols-2 h-min m-3;
+}
+
+.col label {
+  @apply contents;
+}
+
+.col input {
+  @apply w-full;
+}
+
+.tooltip {
+  z-index: 1000;
+  box-shadow: 0 0 20px #000;
+  background-color: rgb(35, 34, 29);
+  @apply p-3 list-none text-white;
 }

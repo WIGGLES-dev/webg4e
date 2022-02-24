@@ -1,5 +1,5 @@
 <script>
-  import { Image, Input } from "../components/form/index.js"
+  import { Input } from "../components/form/index.js"
   import { Tabs, Tab, TabList, TabPanel } from "../components/tabs/index.js"
   import WeaponTable from "../widgets/WeaponTable.svelte"
   import FeatureEditor from "../widgets/FeatureEditor.svelte"
@@ -22,8 +22,8 @@
   <TabPanel>
     <div class="flex">
       <div class="flex flex-col gap-2">
-        <Input bind:value={$skill.name} />
-        <Image bind:src={$skill.img} width="120px" />
+        <input type="text" value={$skill.name} name="name" />
+        <img data-edit src={$skill.img} width="225px" />
       </div>
     </div>
     <div class="flex">

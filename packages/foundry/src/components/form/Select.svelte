@@ -1,11 +1,12 @@
 <script>
-  import { onMount, tick } from "svelte"
+  import { onMount, tick, createEventDispatcher } from "svelte"
+  const dispatch = createEventDispatcher()
   let classList
   export { classList as class }
   export let on = "change"
-  export let value
+  export let value = null
   let innerValue = value
-  export let store
+  export let store = undefined
   export let disabled = false
   export let options = []
   onMount(() => {
@@ -20,9 +21,11 @@
   }
   function change(e) {
     if (on === "change") setValue()
+    dispatch("change", e)
   }
   function input(e) {
     if (on === "input") setValue()
+    dispatch("input", e)
   }
 </script>
 

@@ -9,6 +9,7 @@
         "character": {
             "points": 150,
             "signatureGear": [],
+            "hitLocationRoll": "3d6",
             "allies": []
         },
         "party": {
@@ -62,6 +63,7 @@
             "formula": "",
             "costPerPoint": "",
             "increasedLevel": 0,
+            "current": null,
             "thresholds": []
         },
         "hit location": {

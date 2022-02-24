@@ -1,5 +1,6 @@
 <script>
-  import { Input, Label, Image } from "../components/form/index.js"
+  import { Trait } from "../item.js"
+  import { Input, Label, Select } from "../components/form/index.js"
   import { Tabs, Tab, TabList, TabPanel } from "../components/tabs/index.js"
   import FeatureEditor from "../widgets/FeatureEditor.svelte"
   export let document
@@ -16,8 +17,8 @@
   <TabPanel>
     <div class="flex">
       <div class="flex flex-col gap-2">
-        <Input bind:value={$trait.name} />
-        <Image bind:src={$trait.img} width="120px" />
+        <input type="text" value={$trait.name} name="name" />
+        <img data-edit src={$trait.img} width="225px" />
       </div>
     </div>
     <div class="flex">
@@ -26,6 +27,35 @@
           label="base point cost"
           type="number"
           bind:value={$trait.data.basePointCost}
+        />
+        <Label
+          label="has levels"
+          type="checkbox"
+          bind:checked={$trait.data.hasLevels}
+        />
+        <Label label="control rating">
+          <Select bind:value={$trait.data.cr}>
+            {#each Object.keys(Trait.cr) as cr}
+              <option value={cr}>{cr}</option>
+            {/each}
+          </Select>
+        </Label>
+        <Label
+          label="levels"
+          disabled={!$trait.data.hasLevels}
+          type="number"
+          bind:value={$trait.data.levels}
+        />
+        <Label
+          label="leveled cost"
+          disabled={!$trait.data.hasLevels}
+          type="number"
+          bind:value={$trait.data.leveledPointCost}
+        />
+        <Label
+          label="round down"
+          type="checkbox"
+          bind:checked={$trait.data.roundDown}
         />
       </div>
       <fieldset class="flex-1">

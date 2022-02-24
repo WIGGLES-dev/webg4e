@@ -129,9 +129,13 @@ export function get(object, path) {
 
 export function set(object, path, value) {
   if (typeof path === "string") path = path.split(".")
-  const toSet = get(path.slice(0, -1))
+  const toSet = get(object, path.slice(0, -1))
   const key = path[path.length - 1]
-  toSet[key] = value
+  if (typeof value === "function") {
+    toSet[key] = value(toSet[key])
+  } else {
+    toSet[key] = value
+  }
 }
 
 export function array(...values) {
@@ -144,3 +148,5 @@ export function array(...values) {
 export function bind() {
   return function () {}
 }
+
+export function createDragIcon() {}

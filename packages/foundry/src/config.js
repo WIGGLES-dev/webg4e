@@ -17,6 +17,8 @@ function createSetting(key, data) {
   })
 }
 
+async function loadConfigFile(file) {}
+
 Hooks.on("init", async () => {
   createSetting(Settings.ItemTransfer, {
     name: "Sheet To Sheet Transfer Preference",
@@ -30,6 +32,8 @@ Hooks.on("init", async () => {
     },
     default: "keep",
   })
+  const bassicAttrPath = `systems/${game.system.id}/static/basic.attributes`
+  const humanoidBodyPath = `systems/${game.system.id}/static/humanoid.body`
   createSetting(Settings.DefaultCharacterAttributes, {
     name: "Default Character Attributes",
     hint: "Configure what attribute set characters created for this world are",
@@ -37,9 +41,9 @@ Hooks.on("init", async () => {
     config: true,
     type: String,
     choices: {
-      basic: "Basic Set",
+      [bassicAttrPath]: "basic",
     },
-    default: "basic",
+    default: bassicAttrPath,
   })
   createSetting(Settings.DefaultCharacterHitLocations, {
     name: "Default Character Hit Locations",
@@ -48,9 +52,9 @@ Hooks.on("init", async () => {
     config: true,
     type: String,
     choices: {
-      basic: "Basic Set",
+      [humanoidBodyPath]: "humanoid",
     },
-    default: "basic",
+    default: humanoidBodyPath,
   })
 })
 
@@ -60,3 +64,45 @@ export function settingStore(key) {
   }
   return storeCache[key]
 }
+
+async function retrieveConfig(path) {
+  const res = await fetch(path)
+  const txt = await res.text()
+  try {
+    const json = JSON.parse(txt)
+    return json
+  } catch (err) {}
+}
+
+Hooks.on("preCreateActor", (actor, data, options, id) => {
+  if (data.type === "character") {
+    ;(async () => {
+      const defaultAttributes = await retrieveConfig(
+        game.settings.get(game.system.id, Settings.DefaultCharacterAttributes)
+      )
+      const defaultBody = await retrieveConfig(
+        game.settings.get(game.system.id, Settings.DefaultCharacterHitLocations)
+      )
+      const attributeItems =
+        defaultAttributes?.map?.((data) => {
+          return {
+            name: data.fullName || "New Attribute",
+            type: "attribute",
+            data,
+          }
+        }) ?? []
+      const hitLocationItems =
+        defaultBody?.map?.((data) => {
+          return {
+            name: data.tableName || "New Hit Location",
+            type: "hit location",
+            data,
+          }
+        }) ?? []
+      data.items = [...attributeItems, ...hitLocationItems]
+      Actor.create(data, { noHook: true })
+    })()
+    return false
+  }
+})
+Hooks.on("preCreateItem", (item, data, options, id) => {})

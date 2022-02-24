@@ -6,7 +6,7 @@
   import { setContext, createEventDispatcher } from "svelte"
   import { writable, derived } from "svelte/store"
   const dispatch = createEventDispatcher()
-  let classList = ""
+  let classList = null
   export { classList as class }
   export let key
   export let active = key ? +localStorage.getItem(key) : 0

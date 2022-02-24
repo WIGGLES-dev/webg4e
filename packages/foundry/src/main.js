@@ -88,7 +88,7 @@ Hooks.on("init", () => {
       trait: "/systems/gurps4e/views/TraitEditor.svelte.js",
       equipment: "/systems/gurps4e/views/EquipmentEditor.svelte.js",
       attribute: "/systems/gurps4e/views/AttributeEditor.svelte.js",
-      "hit location": "/systems/gurps4e/view/HitLocationEditor.svelte.js",
+      "hit location": "/systems/gurps4e/views/HitLocationEditor.svelte.js",
     }),
     { makeDefault: true }
   )

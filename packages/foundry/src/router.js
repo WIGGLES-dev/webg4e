@@ -10,12 +10,9 @@ export function sheetRouter(Base, map, options = {}) {
     static get defaultOptions() {
       return {
         ...super.defaultOptions,
-        submitOnChange: false,
-        submitOnClose: false,
         width: 1000,
         height: 750,
-        classes: ["svelte"],
-        links: [...SYSTEM_LINKS],
+        classes: ["svelte", "tailwind"],
         ...options,
       }
     }
@@ -25,10 +22,12 @@ export function sheetRouter(Base, map, options = {}) {
         return super.render(...args)
       }
     }
+    activateListeners(html) {
+      super.activateListeners(html)
+    }
     async _renderInner() {
       this.form = document.createElement("form")
-      const wrapper = this.form.appendChild(document.createElement("div"))
-      const target = wrapper.attachShadow({ mode: "open" })
+      const target = this.form
       this.component = new Sheet({
         target,
         props: {

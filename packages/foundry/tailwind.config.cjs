@@ -1,5 +1,6 @@
 module.exports = {
   mode: "jit",
-  content: ["./src/**/*.ts", "./src/**/*.svelte", "../sheet/**/*.svelte"],
+  content: ["./src/**/*.svelte"],
   plugins: [require("tailwindcss-children")],
-};
+  important: ".tailwind",
+}

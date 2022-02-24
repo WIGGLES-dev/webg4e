@@ -5,10 +5,10 @@
   import { tweened } from "svelte/motion"
   import { cubicInOut } from "svelte/easing"
   import { Arms, Head, Legs, Torso } from "./parts/index.js"
-  export let height
-  export let maxHeight
-  export let width
-  export let minWidth
+  export let height = null
+  export let maxHeight = null
+  export let width = null
+  export let minWidth = null
   export let viewBox = [0, 0, 800, 800]
   export let scale = 1
   export let style = ""

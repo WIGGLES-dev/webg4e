@@ -41,19 +41,19 @@
   <Popper referenceElement={element} let:popper placement="bottom">
     {#if open}
       <div
+        style:z-index="1000"
         style:min-width="700px"
         bind:this={innerElement}
-        use:portal={(node) => node.getRootNode()}
         use:popper
         class="filter-list"
       >
         <menu>
-          <i class="fas fa-plus" on:click={add} />
+          <i class="fas fa-plus contrast" on:click={add} />
         </menu>
         <ul>
           {#each value as filter, i}
-            <li>
-              <slot {i}>
+            <li class="filter-item">
+              <slot value={filter} {i}>
                 {filter}
               </slot>
             </li>
@@ -76,5 +76,6 @@
     @apply p-2 bg-black opacity-75;
   }
   .filter-item {
+    @apply flex;
   }
 </style>

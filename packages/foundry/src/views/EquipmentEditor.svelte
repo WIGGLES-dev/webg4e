@@ -1,7 +1,7 @@
 <script>
-  import { Label, Input, Image } from "../components/form/index.js"
+  import { Label, Input } from "../components/form/index.js"
   import { Tabs, Tab, TabPanel, TabList } from "../components/tabs/index.js"
-  import TextEditor from "../components/TextEditor.svelte"
+  import TextEditor from "../widgets/TextEditor.svelte"
   import WeaponTable from "../widgets/WeaponTable.svelte"
   import FeatureEditor from "../widgets/FeatureEditor.svelte"
   export let document
@@ -21,8 +21,10 @@
   </TabList>
   <TabPanel>
     <div class="flex">
-      <Image bind:src={$equipment.img} width="120px" />
-      <Input bind:value={$equipment.name} />
+      <div class="flex flex-col gap-2">
+        <input name="name" type="text" value={$equipment.name} />
+        <img data-edit src={$equipment.img} width="225x" />
+      </div>
     </div>
     <div class="flex">
       <div class="col">

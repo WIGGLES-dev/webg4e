@@ -1,37 +1,109 @@
 <script>
+  import { tick } from "svelte"
+  import { pdFoundryInstalled, openPDF } from "../pdfoundry.js"
   import { render } from "../components/ContextMenu.svelte"
   import { capitalize, addEventListeners } from "../util.js"
+  import Tree from "../components/Tree.svelte"
+  let classList = null
+  export { classList as class }
   export let type
   export let document
   export let menu = {}
   export let itemsPerRow = 5
   export let setData = (item) => ({})
   const itemStore = document.$items
+  let selected = {}
+  let treeStack = []
+  let viewingChildrenOf
   $: items = $itemStore.filter((item) => item.type === type)
+  $: visible = (() => {
+    if (viewingChildrenOf == null) {
+      return items.filter((item) => item.getSystemFlag("parent") == null)
+    } else {
+      const item = items.find((item) => item.id === viewingChildrenOf.id)
+      if (item) {
+        return [...item.iterEmbeddedChildren()].filter(
+          (item) => item.type === type
+        )
+      }
+    }
+    return []
+  })()
   function addItem() {
-    document.createEmbeddedDocuments("Item", [
-      {
+    if (viewingChildrenOf != null) {
+      viewingChildrenOf.addEmbeddedChild({
         type,
         name: `New ${capitalize(type)}`,
-      },
-    ])
+      })
+    } else {
+      document.createEmbeddedDocuments("Item", [
+        {
+          type,
+          name: `New ${capitalize(type)}`,
+        },
+      ])
+    }
   }
   function menuItems(item) {
     return [
       {
-        label: "edit",
-        class: "fas-fa-edit",
+        label: "Edit",
+        show: menu.edit,
         click: () => item.sheet.render(true),
       },
       {
-        label: "delete",
+        label: "Create Child",
+        show: menu.embed,
+        async click() {
+          item.addEmbeddedChild({
+            type,
+            name: `New ${capitalize(type)}`,
+          })
+        },
+      },
+      {
+        label: "Open PDF",
+        get can() {
+          return pdFoundryInstalled()
+        },
+        click() {
+          const ref = row.getSystemFlag("pdfreference")
+          if (ref) {
+            const split = ref.search(/\d/)
+            const [code, page] = [ref.slice(0, split), ref.slice(split)]
+            openPDF(code, { page: +page })
+          } else {
+            ui.notifications.warn(`${ref} is not a valid page reference`)
+          }
+        },
+      },
+      {
+        label: "Delete",
         class: "fas-fa-trash",
+        show: menu.delete,
         warn: true,
         click: () => item.delete(),
       },
     ]
   }
-  let selected = {}
+  function viewChildren(item) {
+    return function (e) {
+      treeStack.push(item)
+      viewingChildrenOf = item
+    }
+  }
+  export function clearSelected() {
+    selected = {}
+  }
+  export function reset() {
+    clearSelected()
+    viewingChildrenOf = null
+    treeStack = []
+  }
+  export function viewParent() {
+    viewingChildrenOf = treeStack.slice(0, -1).pop()
+    treeStack = treeStack.slice(0, -1)
+  }
   function deleteSelected() {
     const ids = Object.entries(selected)
       .filter(([id, selected]) => selected)
@@ -66,21 +138,33 @@
       dragenter(e) {
         e.preventDefault()
       },
+      dragover(e) {
+        e.preventDefault()
+        const bounds = node.getBoundingClientRect()
+        if (e.clientX - bounds.left > bounds.width / 2) {
+          e.dataTransfer.dropEffect = "link"
+        }
+      },
       async drop(e) {
         const draggingI = items.indexOf(dragging)
         const targetI = items.indexOf(item)
         if (dragging) {
-          const sortBefore = draggingI > targetI
-          const sort = SortingHelpers.performIntegerSort(dragging, {
-            target: item,
-            siblings: items,
-            sortBefore,
-          })
-          const updates = sort.map((u) => ({
-            _id: u.target.data._id,
-            ...u.update,
-          }))
-          await document.updateEmbeddedDocuments("Item", updates)
+          if (draggingI === targetI) {
+            if (e.dataTransfer.dropEffect === "link") {
+            }
+          } else {
+            const sortBefore = draggingI > targetI
+            const sort = SortingHelpers.performIntegerSort(dragging, {
+              target: item,
+              siblings: items,
+              sortBefore,
+            })
+            const updates = sort.map((u) => ({
+              _id: u.target.data._id,
+              ...u.update,
+            }))
+            await document.updateEmbeddedDocuments("Item", updates)
+          }
         }
       },
       dragend(e) {},
@@ -97,59 +181,65 @@
   }
 </script>
 
-<div>
-  <menu class="item-grid-menu">
+<div class={classList}>
+  <menu class="py-1">
     {#if menu.add}
       <i class="fas fa-plus contrast" on:click={addItem} />
     {/if}
     {#if Object.values(selected).some((v) => v)}
       <i class="fas fa-trash warn" on:click={deleteSelected} />
     {/if}
+    {#if viewingChildrenOf}
+      <button type="button" class="w-max" on:click={viewParent}>
+        View {viewingChildrenOf.name}
+      </button>
+      <i class="fas fa-angle-double-up contrast" on:click={reset} />
+    {/if}
   </menu>
-  <ul class="item-grid">
-    {#each items as item, i (item.id)}
-      <li
-        draggable="true"
-        class="item-grid-item"
-        class:selected={selected[item.id]}
-        on:contextmenu={render(menuItems(item))}
-        use:drag={item}
-      >
-        <div class="item-grid-item-content">
-          <slot {item}>
-            <!--  -->
-          </slot>
-        </div>
-      </li>
-    {/each}
-  </ul>
+  <div class="flex">
+    <ul class="flex-1 flex flex-wrap gap-4">
+      {#each visible as item, i (item.id)}
+        <li
+          draggable="true"
+          class="flex flex-col relative p-2 shadow-black shadow-md"
+          class:selected={selected[item.id]}
+          on:contextmenu={render(menuItems(item))}
+          use:drag={item}
+        >
+          <div class="mx-2">
+            <h3 class="text-center" on:click={viewChildren(item)}>
+              <slot name="header">{item.name}</slot>
+            </h3>
+            <slot {item} viewChildren={viewChildren(item)} />
+          </div>
+        </li>
+      {/each}
+    </ul>
+    <ul>
+      <li on:click={reset}>root</li>
+      {#key $document}
+        <Tree
+          value={[...document.items.values()].filter(
+            (item) => item.getSystemFlag("parent") == null && item.type === type
+          )}
+          children={(v) => [...v.iterEmbeddedChildren()]}
+          let:value
+          let:depth
+        >
+          <li
+            on:click={viewChildren(value)}
+            style:padding-left="{(depth + 1) * 8}px"
+          >
+            <span>{value.name}</span>
+          </li>
+        </Tree>
+      {/key}
+    </ul>
+  </div>
 </div>
 
 <style>
-  .item-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-  }
-  .item-grid-menu {
-    padding: 0.5rem 0 0.5rem;
-  }
-  .item-grid-item {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    padding: 0.5rem;
-    box-shadow: 0 0 1rem #000;
-  }
-  .item-grid-item.selected {
-    box-shadow: 0 0 1rem white;
-  }
-  .item-grid-item-menu {
-    position: absolute;
-    display: flex;
-    top: 100%;
-  }
-  .item-grid-item-content {
-    margin: 0 0.75rem 0 0.75rem;
+  .selected {
+    @apply shadow-white shadow-md;
   }
 </style>
